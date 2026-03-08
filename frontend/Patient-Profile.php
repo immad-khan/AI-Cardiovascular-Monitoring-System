@@ -412,9 +412,23 @@ $conn->close();
 				
             </div>
 			
-			<div id="ecgPlots">
-				
+			<div id="ecgPlots" class="m-t-20">
+				<!-- ECG Plots will be appended here -->
 			</div>
+
+            <!-- NEW: Vital Signs Trend Charts (SpO2 & Temperature) -->
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2><strong>Health</strong> Metrics Trends</h2>
+                        </div>
+                        <div class="body">
+                            <div id="vitalsTrendChart" style="height: 300px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -446,7 +460,71 @@ $.toast({
 })
 </script>
 <?php } ?>
+
 <script>
+// Initialize Vital Signs Trend Chart
+function loadVitalsTrendPlot() {
+    var spO2Points = [];
+    var tempPoints = [];
+    var hrPoints = [];
+
+    <?php 
+    // Prepare data points for JavaScript from PHP arrays
+    // We reverse them so they appear chronologically left-to-right
+    $revDates = array_reverse($ecgDates);
+    $revSpO2 = array_reverse($vitalsData['SpO2']);
+    $revTemp = array_reverse($vitalsData['Temperature']);
+    $revHR = array_reverse($vitalsData['heartRate']);
+
+    for($i=0; $i < count($revDates); $i++) {
+        $d = $revDates[$i];
+        $s = $revSpO2[$i] ?? 0;
+        $t = $revTemp[$i] ?? 0;
+        $h = $revHR[$i] ?? 0;
+        echo "spO2Points.push({ label: '$d', y: $s });\n";
+        echo "tempPoints.push({ label: '$d', y: $t });\n";
+        echo "hrPoints.push({ label: '$d', y: $h });\n";
+    }
+    ?>
+
+    var chart = new CanvasJS.Chart("vitalsTrendChart", {
+        animationEnabled: true,
+        theme: "light2",
+        title: { text: "Patient Vital Trends" },
+        axisX: { title: "Time", labelAngle: -45, labelFontSize: 10 },
+        axisY: { title: "SpO2 (%) / HR (BPM)", includeZero: false },
+        axisY2: { title: "Temperature (°C)", includeZero: false },
+        toolTip: { shared: true },
+        legend: { cursor: "pointer", verticalAlign: "top", horizontalAlign: "center", dockInsidePlotArea: false },
+        data: [{
+            type: "line",
+            name: "SpO2 (%)",
+            showInLegend: true,
+            markerSize: 5,
+            yValueFormatString: "##.#'%'",
+            dataPoints: spO2Points
+        },
+        {
+            type: "line",
+            name: "Heart Rate (BPM)",
+            showInLegend: true,
+            markerSize: 5,
+            yValueFormatString: "### 'BPM'",
+            dataPoints: hrPoints
+        },
+        {
+            type: "line",
+            name: "Body Temp (°C)",
+            axisYType: "secondary",
+            showInLegend: true,
+            markerSize: 5,
+            yValueFormatString: "##.# '°C'",
+            dataPoints: tempPoints
+        }]
+    });
+    chart.render();
+}
+
 function loadEcgPlot(id, data, type){
 		
 		var xAxisStripLinesArray = [];
@@ -523,7 +601,7 @@ function loadEcgPlot(id, data, type){
 			}
 		}
 		$(function(){
-			
+			loadVitalsTrendPlot(); // NEW: Load the multi-line trend chart
 			<?php $counter = 0; foreach ($ecgJsonArray as $ecgJsonArrayVal) { ?>
 				
 				var obj = <?php echo $ecgJsonArrayVal ?>;
