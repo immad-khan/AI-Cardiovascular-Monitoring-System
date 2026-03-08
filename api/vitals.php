@@ -79,7 +79,10 @@ try {
     processAIPrediction($conn, $record_id, $vitalsPayload);
 
     $conn->commit();
-    echo json_encode(["success" => true, "record_id" => $record_id, "message" => "Vitals, ECG, and AI Logs processed successfully."]);
+    
+    // NEW: Refresh $record_id metadata if needed (optional)
+    
+    echo json_encode(["success" => true, "record_id" => $record_id, "message" => "Vitals, ECG, and AI Logs processed successfully.", "alert_triggered" => ($spO2 < 90 || $heartRate > 120 || $heartRate < 50)]);
 
 } catch (Exception $e) {
     $conn->rollback();
