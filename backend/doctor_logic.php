@@ -3,17 +3,17 @@
 include_once("../config/DB_Config.php");
 
 function handleDoctorRegistration($conn, $postData, $filesData, $sessionData) {
-    $username = htmlspecialchars(trim($postData['username']));
-    $email = htmlspecialchars(trim($postData['email']));
-    $password = $postData['password'];
-    $full_name = htmlspecialchars(trim($postData['full_name']));
-    $specialization = htmlspecialchars(trim($postData['specialization']));
-    $phone_number = htmlspecialchars(trim($postData['phone_number']));
-    $description = htmlspecialchars(trim($postData['description']));
-    $website_url = htmlspecialchars(trim($postData['website_url']));
+    $username = htmlspecialchars(trim($postData['username'] ?? ''));
+    $email = htmlspecialchars(trim($postData['email'] ?? ''));
+    $password = $postData['password'] ?? '';
+    $full_name = htmlspecialchars(trim($postData['full_name'] ?? ''));
+    $specialization = htmlspecialchars(trim($postData['specialization'] ?? ''));
+    $phone_number = htmlspecialchars(trim($postData['phone_number'] ?? ''));
+    $description = htmlspecialchars(trim($postData['description'] ?? ''));
+    $website_url = htmlspecialchars(trim($postData['website_url'] ?? ''));
 
     $upload_dir = '../uploads/';
-    $profile_pic = 'assets/images/sm/avatar1.jpg'; // default
+    $profile_pic = 'assets/images/sm/avatar1.jpg';
     
     if (isset($filesData['profile_picture']) && $filesData['profile_picture']['error'] == 0) {
         $ext = pathinfo($filesData['profile_picture']['name'], PATHINFO_EXTENSION);
@@ -39,7 +39,7 @@ function handleDoctorRegistration($conn, $postData, $filesData, $sessionData) {
         $conn->commit();
         return ["status" => "Doctor added successfully", "type" => "success", "redirect" => "doctors.php"];
     } catch (PDOException $e) {
-        $conn->rollBack();
+        if ($conn->inTransaction()) $conn->rollBack();
         return ["status" => "Database Error: " . $e->getMessage(), "type" => "error", "redirect" => "add-doctor.php"];
     }
 }

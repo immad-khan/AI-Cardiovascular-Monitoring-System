@@ -34,11 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if(isset($error)) echo "<p class='text-danger'>$error</p>"; ?>
         <form method="POST">
             <input type="text" name="mac_address" class="form-control m-b-10" placeholder="MAC (e.g. AA:BB:CC...)" required>
-            <select name="model" class="form-control m-b-10">
-                <option value="RPI-Kit">Raspberry Pi 4 (IoT Gateway)</option>
+            <select name="model" class="form-control m-b-10" required>
+                <option value="Raspberry Pi 4">Raspberry Pi 4 (IoT Gateway)</option>
                 <option value="ESP32-ECG">ESP32 Wearable</option>
             </select>
-            <button type="submit" class="btn btn-primary">Add Device</button>
+            <button type="submit" class="btn btn-primary btn-round">Add Device</button>
+            <a href="devices.php" class="btn btn-default btn-round btn-simple">Back</a>
         </form>
     </div></div>
 </div>

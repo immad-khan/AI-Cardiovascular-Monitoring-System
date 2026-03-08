@@ -59,20 +59,21 @@ try {
         <div class="row clearfix">
             <div class="col-lg-4 col-md-12">
                 <div class="card"><div class="header"><h2>Alerts</h2></div><div class="body">
-                    <ul>
+                    <ul class="list-unstyled">
                         <?php foreach($alerts as $alert): ?>
-                            <li><div class="bullet pink"></div> <small><?php echo date('H:i', strtotime($alert['timestamp'])) ?></small> - <strong><?php echo $alert['model'] ?></strong>: <?php echo $alert['message'] ?></li>
+                            <li><i class="zmdi zmdi-notifications text-danger"></i> <small><?php echo date('H:i', strtotime($alert['timestamp'])) ?></small> - <strong><?php echo $alert['model'] ?></strong>: <?php echo $alert['message'] ?></li>
                         <?php endforeach; ?>
+                        <?php if(empty($alerts)) echo "<li>No critical alerts.</li>"; ?>
                     </ul>
                 </div></div>
             </div>
             <div class="col-lg-8 col-md-12">
                 <div class="card"><div class="header"><h2>New Patients</h2></div><div class="body table-responsive">
                     <table class="table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Link</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Name</th><th>Action</th></tr></thead>
                         <tbody>
                             <?php foreach($new_patients as $p): ?>
-                                <tr><td><?php echo $p['patientID'] ?></td><td><?php echo $p['name'] ?></td><td><a href="Patient-Profile.php?patientId=<?php echo $p['patientID'] ?>">View</a></td></tr>
+                                <tr><td><?php echo $p['patientID'] ?></td><td><?php echo $p['name'] ?></td><td><a href="Patient-Profile.php?patientId=<?php echo $p['patientID'] ?>" class="btn btn-sm btn-info">View</a></td></tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
