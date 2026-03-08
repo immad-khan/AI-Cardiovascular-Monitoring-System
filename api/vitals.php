@@ -11,6 +11,7 @@ header('Content-Type: application/json');
 
 include_once("../config/DB_Config.php");
 include_once("../backend/ai_inference_service.php");
+include_once("../backend/notification_service.php");
 
 // Required Hardware Identification
 if (!isset($_POST['mac_address'])) {
@@ -62,6 +63,7 @@ try {
     if ($spO2 !== null && $spO2 < 90) {
         $msg = "CRITICAL: Low SpO2 level detected ($spO2%) for device $mac_address";
         $conn->query("INSERT INTO CRITICAL_ALERT (mac_address, message, status) VALUES ('$mac_address', '$msg', 'Active')");
+        sendCriticalSMS("+92XXXXXXXXXX", $msg); // Placeholder for Primary In-Charge
     }
     
     if ($heartRate !== null && ($heartRate > 120 || $heartRate < 50)) {
