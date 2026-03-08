@@ -10,6 +10,7 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 include_once("../config/DB_Config.php");
+include_once("../backend/ai_inference_service.php");
 
 // Required Hardware Identification
 if (!isset($_POST['mac_address'])) {
@@ -68,8 +69,17 @@ try {
         $conn->query("INSERT INTO CRITICAL_ALERT (mac_address, message, status) VALUES ('$mac_address', '$msg', 'Active')");
     }
 
+    // 4. Hook for AI Inference
+    $vitalsPayload = [
+        'heartRate' => $heartRate,
+        'SpO2' => $spO2,
+        'Temperature' => $temperature,
+        'RespirationRate' => $respirationRate
+    ];
+    processAIPrediction($conn, $record_id, $vitalsPayload);
+
     $conn->commit();
-    echo json_encode(["success" => true, "record_id" => $record_id, "message" => "Vitals and ECG samples uploaded successfully."]);
+    echo json_encode(["success" => true, "record_id" => $record_id, "message" => "Vitals, ECG, and AI Logs processed successfully."]);
 
 } catch (Exception $e) {
     $conn->rollback();
