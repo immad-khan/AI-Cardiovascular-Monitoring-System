@@ -1,22 +1,16 @@
-﻿<?php 
-include("./config/DB_Config.php");
-// Start the session
+﻿<?php
 session_start();
+include("./config/DB_Config.php");
 
-// Check if the user is logged in and if the user type is admin
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin' || $_SESSION['user_type'] !== 'doctor') {
-    // If not admin, redirect to index.php with a relevant status
-    header("Location: index.php?status=access_denied&type=".$_SESSION['user_type']);
-    exit(); // Stop further execution after the redirect
+// Check if the user is logged in as doctor or admin
+if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_SESSION['user_type'] !== 'doctor')) {
+    header("Location: frontend/sign-up.php?status=access_denied&type=error");
+    exit();
 }
 
 // Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize and validate the input
-    $username = htmlspecialchars(trim($_POST['username']));
-    $email = htmlspecialchars(trim($_POST['email']));
-    $password = htmlspecialchars(trim($_POST['password']));
-    $confirm_password = htmlspecialchars(trim($_POST['confirm_password']));
     $full_name = htmlspecialchars(trim($_POST['full_name']));
     $specialization = htmlspecialchars(trim($_POST['specialization']));
     $phone_number = htmlspecialchars(trim($_POST['phone_number']));
@@ -24,77 +18,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $website_url = htmlspecialchars(trim($_POST['website_url']));
     $profile_picture = $_FILES['profile_picture'];
 
-    // Validate fields
-    if (empty($username) || empty($email) || empty($password) || empty($confirm_password) || empty($full_name) || empty($specialization) || empty($phone_number)) {
-        header("Location: index.php?status=missing_fields");
+    // Validate required fields
+    if (empty($full_name) || empty($specialization) || empty($phone_number)) {
+        header("Location: complete-doctor-profile.php?status=missing_fields&type=error");
         exit();
     }
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        header("Location: add-doctor.php?status=invalid_email");
-        exit();
-    }
+    // Validate the profile picture (optional — allow empty)
+    $profile_picture_path = null;
+    if (!empty($profile_picture['name'])) {
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+        $file_extension = strtolower(pathinfo($profile_picture['name'], PATHINFO_EXTENSION));
 
-    if ($password !== $confirm_password) {
-        header("Location: add-doctor.php?status=password_mismatch");
-        exit();
-    }
-
-    // Validate the profile picture
-    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
-    $file_extension = pathinfo($profile_picture['name'], PATHINFO_EXTENSION);
-
-    if ($profile_picture['error'] !== UPLOAD_ERR_OK) {
-        header("Location: add-doctor.php?status=file_upload_error");
-        exit();
-    }
-
-    if (!in_array($file_extension, $allowed_extensions)) {
-        header("Location: add-doctor.php?status=invalid_file_type");
-        exit();
-    }
-
-    // Upload the profile picture
-    $upload_directory = 'uploads/'; // Ensure this directory exists and is writable
-    $profile_picture_path = $upload_directory . uniqid() . '.' . $file_extension;
-
-    if (!move_uploaded_file($profile_picture['tmp_name'], $profile_picture_path)) {
-        header("Location: add-doctor.php?status=upload_failed");
-        exit();
-    }
-
-    // Hash the password before storing
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    // Insert the user into the users table
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password, type) VALUES (?, ?, ?, 'doctor')");
-    $stmt->bind_param("sss", $username, $email, $hashed_password);
-    
-    if ($stmt->execute()) {
-        // Get the user ID of the newly created doctor account
-        $user_id = $stmt->insert_id;
-
-        // Insert profile information into doctorProfile table
-        $stmt_profile = $conn->prepare("INSERT INTO doctorProfile (user_id, full_name, specialization, phone_number, profile_picture, description,website_url) VALUES (?, ?, ?, ?, ?, ?,?)");
-        $stmt_profile->bind_param("issssss", $user_id, $full_name, $specialization, $phone_number, $profile_picture_path, $description,$website_url);
-        
-        if ($stmt_profile->execute()) {
-            header("Location: doctors.php?status=account_created");
-        } else {
-            header("Location: add-doctor.php?status=profile_creation_failed");
+        if ($profile_picture['error'] !== UPLOAD_ERR_OK) {
+            header("Location: complete-doctor-profile.php?status=file_upload_error&type=error");
+            exit();
         }
 
-        $stmt_profile->close();
-    } else {
-        header("Location: add-doctor.php?status=user_creation_failed");
+        if (!in_array($file_extension, $allowed_extensions)) {
+            header("Location: complete-doctor-profile.php?status=invalid_file_type&type=error");
+            exit();
+        }
+
+        $upload_directory = './uploads/';
+        $profile_picture_path = $upload_directory . uniqid() . '.' . $file_extension;
+
+        if (!move_uploaded_file($profile_picture['tmp_name'], $profile_picture_path)) {
+            header("Location: complete-doctor-profile.php?status=upload_failed&type=error");
+            exit();
+        }
     }
 
-    $stmt->close();
+    // Insert profile information into doctorProfile table using the logged-in userID
+    $user_id = $_SESSION['user_id'];
+    try {
+        $stmt_profile = $conn->prepare('INSERT INTO "doctorProfile" ("userID", full_name, specialization, phone_number, profile_picture, description, website_url) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        $stmt_profile->execute([$user_id, $full_name, $specialization, $phone_number, $profile_picture_path, $description, $website_url]);
+        header("Location: frontend/patients.php?status=profile_created&type=success");
+        exit();
+    } catch (PDOException $e) {
+        header("Location: complete-doctor-profile.php?status=profile_creation_failed&type=error");
+        exit();
+    }
 }
-
-// Close the connection
-$conn->close();
-?>
 ?>
 <!doctype html>
 <html class="no-js " lang="en">
