@@ -1,5 +1,7 @@
-<?php 
+<?php
+session_start();
 include("../config/DB_Config.php");
+
 // Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize and validate the input
@@ -10,31 +12,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Ensure no fields are empty
     if (empty($user) || empty($email) || empty($pass) || empty($accType)) {
-            header("Location: sign-up.php?status=All fields are required");
+        header("Location: sign-up.php?status=All fields are required");
+        exit();
     } else {
         // Hash the password for security
         $hashed_password = password_hash($pass, PASSWORD_DEFAULT);
 
-        // Prepare an SQL statement to insert the user data
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password,type) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $user, $email, $hashed_password, $accType);
+        // Prepare a PDO statement to insert the user data
+        $stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
 
         // Execute the query and check if successful
-        if ($stmt->execute()) {
-            // Redirect to index.php with status=success
+        if ($stmt->execute([$user, $email, $hashed_password, $accType])) {
             header("Location: index.php?status=Registration successful");
-            exit(); // Stop further execution after redirect
+            exit();
         } else {
-            echo "Error: " . $stmt->error;
+            $errorInfo = $stmt->errorInfo();
+            echo "Error: " . htmlspecialchars($errorInfo[2]);
         }
-
-        // Close the statement
-        $stmt->close();
     }
 }
-
-// Close the connection
-$conn->close();
 ?>
 <!doctype html>
 <html class="no-js " lang="en">

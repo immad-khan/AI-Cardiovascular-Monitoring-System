@@ -14,47 +14,41 @@ function handleLogin($conn, $postData) {
         return ["status" => "All fields are required", "type" => "error", "redirect" => "index.php"];
     }
 
-    $stmt = $conn->prepare("SELECT id, username, email, password, type, isActive FROM users WHERE username = ?");
-    $stmt->bind_param("s", $user);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt = $conn->prepare('SELECT "userID", username, email, password, role, "isActive" FROM users WHERE username = ?');
+    $stmt->execute([$user]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
+    if ($row) {
         if (password_verify($pass, $row['password'])) {
-            if ($row['isActive'] == 0) {
+            if ($row['isActive'] == false) {
                 return ["status" => "Account is not active", "type" => "error", "redirect" => "index.php"];
             }
 
-            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['user_id'] = $row['userID'];
             $_SESSION['username'] = $row['username'];
-            $_SESSION['user_type'] = $row['type'];
+            $_SESSION['user_type'] = $row['role'];
 
-            if($row['type'] != "admin"){
+            if ($row['role'] != "admin") {
                 $_SESSION['email'] = $row['email'];
-                $_SESSION['password'] = $row['password'];
             }
 
             // Role-based redirects
-            switch ($row['type']) {
+            switch ($row['role']) {
                 case 'admin':
                     return ["redirect" => "dashboard.php"];
                 case 'doctor':
-                    $stmt_doctor = $conn->prepare("SELECT id FROM doctorProfile WHERE user_id = ?");
-                    $stmt_doctor->bind_param("i", $row['id']);
-                    $stmt_doctor->execute();
-                    $res_doctor = $stmt_doctor->get_result();
-                    return ($res_doctor->num_rows > 0) 
+                    $stmt_doctor = $conn->prepare('SELECT "doctorID" FROM "doctorProfile" WHERE "userID" = ?');
+                    $stmt_doctor->execute([$row['userID']]);
+                    $res_doctor = $stmt_doctor->fetch(PDO::FETCH_ASSOC);
+                    return $res_doctor
                         ? ["status" => "Doctor login successful", "redirect" => "patients.php"]
                         : ["redirect" => "add-doctor.php"];
                 case 'patient':
-                    $stmt_patient = $conn->prepare("SELECT patient_id FROM patients WHERE email = ?");
-                    $stmt_patient->bind_param("s", $row['email']);
-                    $stmt_patient->execute();
-                    $res_patient = $stmt_patient->get_result();
-                    if ($res_patient->num_rows > 0) {
-                        $p = $res_patient->fetch_assoc();
-                        return ["redirect" => "Patient-Profile.php?patientId=" . $p['patient_id']];
+                    $stmt_patient = $conn->prepare('SELECT "patientID" FROM patients WHERE email = ?');
+                    $stmt_patient->execute([$row['email']]);
+                    $res_patient = $stmt_patient->fetch(PDO::FETCH_ASSOC);
+                    if ($res_patient) {
+                        return ["redirect" => "Patient-Profile.php?patientId=" . $res_patient['patientID']];
                     }
                     return ["redirect" => "index.php"];
                 case 'tech-admin':
@@ -82,14 +76,14 @@ function handleSignup($conn, $postData) {
     }
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password, type) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $username, $email, $hashed_password, $type);
 
-    if ($stmt->execute()) {
+    $stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+
+    if ($stmt->execute([$username, $email, $hashed_password, $type])) {
         return ["status" => "Account Created Successfully", "type" => "success", "redirect" => "index.php"];
     } else {
-        return ["status" => "Registration Failed", "type" => "error", "redirect" => "sign-up.php"];
+        $err = $stmt->errorInfo();
+        return ["status" => "Registration Failed: " . $err[2], "type" => "error", "redirect" => "sign-up.php"];
     }
 }
 ?>
