@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="overlay"></div>
 <!-- Top Bar -->
 <nav class="navbar p-l-5 p-r-5">
-    <?php include("top_nav.php") ?>
+    <?php include("./frontend/top_nav.php") ?>
 </nav>
 <!-- Left Sidebar -->
 <aside id="leftsidebar" class="sidebar">
@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </aside>
 <!-- Right Sidebar -->
 
-<?php include("rightsidebar.php") ?>
+<?php include("./frontend/rightsidebar.php") ?>
 
 
 <section class="content">
