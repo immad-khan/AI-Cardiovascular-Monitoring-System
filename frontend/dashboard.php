@@ -1,9 +1,9 @@
-﻿<?php 
-include("../config/DB_Config.php");
+<?php
 session_start();
+include("../config/DB_Config.php");
 
 if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "admin") {
-    header("Location: index.php?status=access_denied");
+    header("Location: index.php?status=access_denied&type=error");
     exit();
 }
 
