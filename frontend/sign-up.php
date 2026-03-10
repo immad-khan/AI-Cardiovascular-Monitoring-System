@@ -18,16 +18,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash the password for security
         $hashed_password = password_hash($pass, PASSWORD_DEFAULT);
 
-        // Prepare a PDO statement to insert the user data
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+        try {
+            // Prepare a PDO statement to insert the user data
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$user, $email, $hashed_password, $accType]);
 
-        // Execute the query and check if successful
-        if ($stmt->execute([$user, $email, $hashed_password, $accType])) {
-            header("Location: index.php?status=Registration successful");
+            // Auto-login: fetch the new user and set session
+            $stmt2 = $conn->prepare('SELECT "userID", username, role FROM users WHERE username = ?');
+            $stmt2->execute([$user]);
+            $newUser = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+            if ($newUser) {
+                $_SESSION['user_id']   = $newUser['userID'];
+                $_SESSION['username']  = $newUser['username'];
+                $_SESSION['user_type'] = $newUser['role'];
+
+                // Role-based redirect after signup
+                if ($newUser['role'] === 'patient') {
+                    header("Location: Patient-Dashboard.php");
+                } elseif ($newUser['role'] === 'doctor') {
+                    header("Location: /complete-doctor-profile.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
+                exit();
+            }
+
+            header("Location: sign-up.php?status=Registration+successful.+Please+sign+in&type=success");
             exit();
-        } else {
-            $errorInfo = $stmt->errorInfo();
-            echo "Error: " . htmlspecialchars($errorInfo[2]);
+
+        } catch (PDOException $e) {
+            $errMsg = $e->getMessage();
+            if (strpos($errMsg, 'unique') !== false || strpos($errMsg, 'duplicate') !== false) {
+                header("Location: sign-up.php?status=Username+or+email+already+exists&type=error");
+            } else {
+                header("Location: sign-up.php?status=Registration+failed.+Please+try+again&type=error");
+            }
+            exit();
         }
     }
 }
