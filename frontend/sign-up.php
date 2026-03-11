@@ -131,6 +131,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                         <h5>Sign Up</h5>
                         <span>Register a new membership</span>
+                        <?php if (isset($_GET['status'])): ?>
+                            <div class="alert alert-<?php echo (isset($_GET['type']) && $_GET['type'] == 'error') ? 'danger' : 'success'; ?>" style="margin-top: 10px;">
+                                <?php echo htmlspecialchars($_GET['status']); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="content">                                                
                         <div class="input-group">
