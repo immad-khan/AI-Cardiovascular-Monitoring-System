@@ -57,9 +57,9 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
         <div class="row clearfix">
             <?php 
                 try {
-                    $sql = "SELECT u.\"userID\", u.username, u.email, p.full_name, p.specialization, p.phone_number, p.profile_picture, p.description, p.website_url
+                    $sql = "SELECT u.\"userID\", u.username, u.email, COALESCE(p.full_name, u.username) as full_name, COALESCE(p.specialization, 'General') as specialization, COALESCE(p.phone_number, 'N/A') as phone_number, COALESCE(p.profile_picture, '../assets/images/sm/avatar1.jpg') as profile_picture, COALESCE(p.description, 'No profile information available.') as description, p.website_url
                             FROM users u
-                            JOIN \"doctorProfile\" p ON u.\"userID\" = p.\"userID\"
+                            LEFT JOIN \"doctorProfile\" p ON u.\"userID\" = p.\"userID\"
                             WHERE u.role = 'doctor' AND u.\"isActive\" = TRUE";
                     $stmt = $conn->query($sql);
 
