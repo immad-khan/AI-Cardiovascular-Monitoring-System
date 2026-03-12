@@ -50,10 +50,155 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 </head>
 <body class="theme-cyan">
+<!-- Page Loader -->
 <div class="page-loader-wrapper">
     <div class="loader">
         <div class="m-t-30"><img class="zmdi-hc-spin" src="../assets/images/logo.svg" width="48" height="48" alt="Oreo"></div>
         <p>Please wait...</p>
     </div>
 </div>
-<!-- Rest of the HTML follows... -->
+<!-- Overlay For Sidebars -->
+<div class="overlay"></div>
+<!-- Top Bar -->
+<nav class="navbar p-l-5 p-r-5">
+    <?php include("top_nav.php") ?>
+</nav>
+
+<aside id="leftsidebar" class="sidebar">
+    <ul class="nav nav-tabs">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" style="background: #00cfd1; color: white;" href="#dashboard"><img src="../assets/images/logo.svg" width="30" alt="CUST Digihealth"> &nbsp; CUST  DIGIHEALTH </a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane stretchRight active" id="dashboard">
+            <div class="menu">
+                <ul class="list">
+                    <li><a href="dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>
+                    <li class="active open"><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-account-add"></i><span>Doctors</span> </a>
+                        <ul class="ml-menu">
+                            <li><a href="doctors.php">All Doctors</a></li>     
+                            <li class="active"><a href="add-doctor.php">Add Doctor</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-account-o"></i><span>Patients</span> </a>
+                        <ul class="ml-menu">
+                            <li><a href="patients.php">All Patients</a></li>   
+                            <li><a href="add-patient.php">Add Patient</a></li> 
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>    
+</aside>
+
+<section class="content">
+    <div class="block-header">
+        <div class="row">
+            <div class="col-lg-7 col-md-5 col-sm-12">
+                <h2>Create Doctor Profile
+                <small class="text-muted">Welcome to CUST Digihealth</small>   
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row clearfix">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <form method="post" action="" enctype="multipart/form-data">
+                    <div class="card">
+                        <div class="header">
+                            <h2><strong>Doctor's</strong> Account Information <small>Login Credentials</small> </h2>
+                        </div>
+                        <div class="body">
+                            <div class="row clearfix">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="username" placeholder="Username" required>
+                                    </div>  
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                    </div>  
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" name="password" placeholder="Password" required>
+                                    </div>  
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="header">
+                            <h2><strong>Doctor</strong> Profile</h2>
+                        </div>
+                        <div class="body">
+                            <div class="row clearfix">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="full_name" placeholder="Full Name" required>
+                                    </div>
+                                </div>  
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="specialization" placeholder="Specialization" required>
+                                    </div>
+                                </div>  
+                            </div>
+                            <div class="row clearfix">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="text" name="phone_number" class="form-control" placeholder="Phone (e.g. 03xx-xxxxxxx)" required>
+                                    </div>
+                                </div>  
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="file" class="form-control" name="profile_picture" accept="image/*">
+                                    </div>
+                                </div>  
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="website_url" placeholder="Website URL">
+                                    </div>
+                                </div>  
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <textarea rows="4" class="form-control no-resize" name="description" placeholder="Bio / Description..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <button type="submit" class="btn btn-primary btn-round">Submit</button>
+                                    <a href="dashboard.php" class="btn btn-default btn-round btn-simple">Cancel</a>
+                                </div>  
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Jquery Core Js --> 
+<script src="../assets/bundles/libscripts.bundle.js"></script>
+<script src="../assets/bundles/vendorscripts.bundle.js"></script>
+<script src="../assets/bundles/mainscripts.bundle.js"></script>
+<script>
+    // Simple script to hide loader after page components are handled by mainscripts
+    $(window).on('load', function() {
+        $('.page-loader-wrapper').fadeOut();
+    });
+    // Fallback if mainscripts doesn't hide it
+    setTimeout(function() {
+        $('.page-loader-wrapper').fadeOut();
+    }, 2000);
+</script>
+</body>
+</html>
