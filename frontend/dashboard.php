@@ -40,7 +40,7 @@ try {
 <nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>
 
 <aside id="leftsidebar" class="sidebar">
-    <?php include("left_sidebar.php") ?>
+    <?php include("admin_sidebar.php") ?>
 </aside>
 
 <section class="content home">

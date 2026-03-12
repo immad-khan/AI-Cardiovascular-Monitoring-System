@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!-- Left Sidebar -->
 <aside id="leftsidebar" class="sidebar">
-    <?php include("left_sidebar.php") ?>
+    <?php include("admin_sidebar.php") ?>
 </aside>
 
 <section class="content">

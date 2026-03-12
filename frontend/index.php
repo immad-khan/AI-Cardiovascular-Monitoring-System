@@ -8,7 +8,7 @@ if (isset($_SESSION["user_type"])) {
         header("Location: dashboard.php");
         exit();
     } elseif ($_SESSION["user_type"] === "doctor") {
-        header("Location: patients.php");
+        header("Location: Doctor-Dashboard.php");
         exit();
     } elseif ($_SESSION["user_type"] === "patient") {
         header("Location: Patient-Dashboard.php");
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($row['role'] === 'admin') {
                     header("Location: dashboard.php");
                 } elseif ($row['role'] === 'doctor') {
-                    header("Location: patients.php");
+                    header("Location: Doctor-Dashboard.php");
                 } elseif ($row['role'] === 'patient') {
                     header("Location: Patient-Dashboard.php");
                 } else {

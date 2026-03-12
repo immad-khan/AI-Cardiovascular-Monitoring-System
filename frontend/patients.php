@@ -34,7 +34,15 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
     <?php include("top_nav.php") ?>
 </nav>
 <aside id="leftsidebar" class="sidebar">
-    <?php include("left_sidebar.php") ?>
+    <?php 
+    if ($_SESSION['user_type'] === 'admin') {
+        include("admin_sidebar.php");
+    } elseif ($_SESSION['user_type'] === 'doctor') {
+        include("doctor_sidebar.php");
+    } else {
+        include("patient_sidebar.php");
+    }
+    ?>
 </aside>
 
 <?php include("rightsidebar.php") ?>

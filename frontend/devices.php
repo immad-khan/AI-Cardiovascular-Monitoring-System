@@ -43,7 +43,7 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
 </nav>
 <!-- Left Sidebar -->
 <aside id="leftsidebar" class="sidebar">
-    <?php include("left_sidebar.php") ?>
+    <?php include("admin_sidebar.php") ?>
 </aside>
 <!-- Right Sidebar -->
 

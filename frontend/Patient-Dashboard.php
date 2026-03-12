@@ -71,22 +71,7 @@ try {
 </nav>
 
 <aside id="leftsidebar" class="sidebar">
-    <div class="menu">
-        <ul class="list">
-            <li>
-                <div class="user-info">
-                    <div class="image"><img src="../assets/images/sm/avatar1.jpg" alt="User"></div>
-                    <div class="detail">
-                        <h4><?php echo htmlspecialchars($patientData['name']); ?></h4>
-                        <small>Patient ID: <?php echo $patientId; ?></small>                        
-                    </div>
-                </div>
-            </li>
-            <li class="header">MY MENU</li>
-            <li class="active"><a href="Patient-Dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>
-            <li><a href="Patient-Profile.php?patientId=<?php echo $patientId; ?>"><i class="zmdi zmdi-chart"></i><span>Detailed Vitals</span></a></li>
-        </ul>
-    </div>
+    <?php include("patient_sidebar.php") ?>
 </aside>
 
 <section class="content home">
