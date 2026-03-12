@@ -54,7 +54,17 @@ try {
 </head>
 <body class="theme-cyan">
 
+<!-- Overlay For Sidebars -->
+<div class="overlay"></div>
+
 <?php include("top_nav.php"); ?>
+
+<!-- Left Sidebar -->
+<aside id="leftsidebar" class="sidebar">
+    <?php include("left_sidebar.php") ?>
+</aside>
+
+<!-- Right Sidebar -->
 <?php include("rightsidebar.php"); ?>
 
 <section class="content">
