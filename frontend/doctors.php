@@ -1,9 +1,9 @@
 ﻿<?php 
-include("./config/DB_Config.php");
+include("../config/DB_Config.php");
 session_start();
 
 if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-    header("Location: index.php?status=access_denied&type=".$_SESSION['user_type']);
+    header("Location: index.php?status=access_denied&type=".($_SESSION['user_type'] ?? 'none'));
     exit();
 }
 ?>
@@ -15,9 +15,9 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 <title>Doctors - CUST Digihealth </title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="./assets/plugins/bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="./assets/css/main.css">
-<link rel="stylesheet" href="./assets/css/color_skins.css">
+<link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/color_skins.css">
 </head>
 <body class="theme-cyan">
 <div class="page-loader-wrapper">
