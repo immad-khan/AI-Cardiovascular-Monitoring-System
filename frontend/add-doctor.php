@@ -65,30 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </nav>
 
 <aside id="leftsidebar" class="sidebar">
-    <ul class="nav nav-tabs">
-        <li class="nav-item"><a class="nav-link active" data-toggle="tab" style="background: #00cfd1; color: white;" href="#dashboard"><img src="../assets/images/logo.svg" width="30" alt="CUST Digihealth"> &nbsp; CUST  DIGIHEALTH </a></li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane stretchRight active" id="dashboard">
-            <div class="menu">
-                <ul class="list">
-                    <li><a href="dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>
-                    <li class="active open"><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-account-add"></i><span>Doctors</span> </a>
-                        <ul class="ml-menu">
-                            <li><a href="doctors.php">All Doctors</a></li>     
-                            <li class="active"><a href="add-doctor.php">Add Doctor</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-account-o"></i><span>Patients</span> </a>
-                        <ul class="ml-menu">
-                            <li><a href="patients.php">All Patients</a></li>   
-                            <li><a href="add-patient.php">Add Patient</a></li> 
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>    
+    <?php include("left_sidebar.php") ?>
 </aside>
 
 <section class="content">

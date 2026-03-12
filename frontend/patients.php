@@ -34,15 +34,7 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
     <?php include("top_nav.php") ?>
 </nav>
 <aside id="leftsidebar" class="sidebar">
-    <div class="menu">
-        <ul class="list">
-            <li class="active open"><a href="dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>            
-            <li><a href="doctors.php"><i class="zmdi zmdi-account-add"></i><span>Doctors</span> </a></li>
-            <li><a href="patients.php"><i class="zmdi zmdi-account-o"></i><span>Patients</span> </a></li>
-            <li><a href="devices.php"><i class="zmdi zmdi-swap-alt"></i><span>ECG Devices</span> </a></li>
-            <li><a href="Clinical-Predictions.php"><i class="zmdi zmdi-chart"></i><span>AI Predictions</span> </a></li>
-        </ul>
-    </div>
+    <?php include("left_sidebar.php") ?>
 </aside>
 
 <?php include("rightsidebar.php") ?>

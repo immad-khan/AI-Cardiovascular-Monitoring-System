@@ -40,18 +40,7 @@ try {
 <nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>
 
 <aside id="leftsidebar" class="sidebar">
-    <div class="menu">
-        <ul class="list">
-            <li class="active open"><a href="dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>            
-            <li><a href="doctors.php"><i class="zmdi zmdi-account-add"></i><span>Doctors List</span> </a></li>
-            <li><a href="patients.php"><i class="zmdi zmdi-account-o"></i><span>Patient List</span> </a></li>
-            <li><a href="devices.php"><i class="zmdi zmdi-swap-alt"></i><span>ECG Devices</span> </a></li>
-            <li><a href="Clinical-Predictions.php"><i class="zmdi zmdi-chart"></i><span>AI Predictions</span> </a></li>
-            <li class="header">MEDICAL MANAGEMENT</li>
-            <li><a href="all-Departments.php"><i class="zmdi zmdi-city"></i><span>Manage Departments</span></a></li>
-            <li><a href="events.php"><i class="zmdi zmdi-calendar"></i><span>Events & Schedule</span></a></li>
-        </ul>
-    </div>
+    <?php include("left_sidebar.php") ?>
 </aside>
 
 <section class="content home">
