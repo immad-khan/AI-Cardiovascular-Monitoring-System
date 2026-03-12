@@ -27,13 +27,9 @@ try {
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php"); ?></nav>
+<!-- Left Sidebar -->
 <aside id="leftsidebar" class="sidebar">
-    <div class="menu">
-        <ul class="list">
-            <li><a href="dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>            
-            <li class="active border-active"><a href="all-Departments.php"><i class="zmdi zmdi-city"></i><span>Manage Departments</span></a></li>
-        </ul>
-    </div>
+    <?php include("left_sidebar.php") ?>
 </aside>
 <section class="content">
     <div class="block-header">
