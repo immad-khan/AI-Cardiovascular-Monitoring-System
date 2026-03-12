@@ -57,31 +57,48 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
         <div class="row clearfix">
             <?php 
                 try {
-                    $sql = "SELECT u.\"userID\", u.username, u.email, COALESCE(p.full_name, u.username) as full_name, COALESCE(p.specialization, 'General') as specialization, COALESCE(p.phone_number, 'N/A') as phone_number, COALESCE(p.profile_picture, '../assets/images/sm/avatar1.jpg') as profile_picture, COALESCE(p.description, 'No profile information available.') as description, p.website_url
+                    // Fetch both doctors WITH profiles and doctors WITHOUT profiles (orphaned)
+                    $sql = "SELECT u.\"userID\", u.username, u.email, 
+                                   COALESCE(p.full_name, u.username) as full_name, 
+                                   COALESCE(p.specialization, 'General Practitioner') as specialization, 
+                                   COALESCE(p.phone_number, 'N/A') as phone_number, 
+                                   COALESCE(p.profile_picture, '../assets/images/sm/avatar1.jpg') as profile_picture, 
+                                   COALESCE(p.description, 'No professional description provided yet.') as description, 
+                                   p.website_url
                             FROM users u
                             LEFT JOIN \"doctorProfile\" p ON u.\"userID\" = p.\"userID\"
-                            WHERE u.role = 'doctor' AND u.\"isActive\" = TRUE";
+                            WHERE u.role = 'doctor' AND u.\"isActive\" = TRUE
+                            ORDER BY p.full_name ASC NULLS LAST";
                     $stmt = $conn->query($sql);
 
+                    $found = false;
                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $found = true;
                         $color = "xl-parpl";
                         if($row['specialization'] == "Cardiologist") $color = "xl-blue";
                         echo '<div class="col-lg-3 col-md-4 col-sm-6">
                             <div class="card ' . $color . ' member-card doctor">
                                 <div class="body">
                                     <div class="member-thumb">
-                                        <img src="' . htmlspecialchars($row['profile_picture']) . '" class="img-fluid" alt="profile">                               
+                                        <img src="' . htmlspecialchars($row['profile_picture']) . '" class="img-fluid" alt="profile" style="max-height: 200px; width: auto; border-radius: 50%;">                               
                                     </div>
-                                    <div class="detail">
+                                    <div class="detail m-t-20">
                                         <h4 class="m-b-0">' . htmlspecialchars($row['full_name']) . '</h4>
-                                        <p class="text-muted">' . htmlspecialchars($row['specialization']) . '</p>
+                                        <p class="text-muted"><strong>' . htmlspecialchars($row['specialization']) . '</strong></p>
                                         <p class="text-muted">' . htmlspecialchars($row['phone_number']) . '</p>      
-                                        <p class="text-muted" style="min-height:80px;">' . htmlspecialchars(substr($row['description'] ?? '', 0, 100)) . '...</p>                           
-                                        <a href="' . htmlspecialchars($row['website_url'] ?? '#') . '" class="btn btn-default btn-round btn-simple" target="_blank">View Profile</a>
+                                        <p class="text-muted" style="min-height:60px;">' . htmlspecialchars(substr($row['description'] ?? '', 0, 100)) . '...</p>                           
+                                        <div class="m-t-20">
+                                            <a href="edit-doctor.php?id=' . $row['userID'] . '" class="btn btn-info btn-round btn-simple">Edit</a>
+                                            <a href="delete-doctor.php?id=' . $row['userID'] . '" class="btn btn-danger btn-round btn-simple" onclick="return confirm(\'Are you sure you want to delete this doctor account?\')">Delete</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>';
+                    }
+
+                    if (!$found) {
+                        echo '<div class="col-12 text-center"><h3>No doctors found in the database.</h3></div>';
                     }
                 } catch (PDOException $e) {
                     echo '<div class="col-12 text-danger">Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
