@@ -14,7 +14,7 @@ try {
     // 1. Fetch AI Prediction History joined with Patient Data
     $sql = "SELECT apl.*, p.name as patient_name, vr.timestamp as reading_time, md.model as device_model
             FROM \"AI_PREDICTION_LOG\" apl
-            JOIN vital_sign_readings vr ON apl.reading_id = vr.\"readingID\"
+            JOIN vital_sign_readings vr ON apl.\"readingID\" = vr.\"readingID\"
             JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
             JOIN patients p ON md.\"patientID\" = p.\"patientID\" ";
     
