@@ -139,20 +139,29 @@ try {
                             <h2><strong>Basic</strong> Information</h2>
                         </div>
                         <div class="body">
+                            <style>
+                                .required:after {
+                                    content: " *";
+                                    color: red;
+                                }
+                            </style>
                             <div class="row clearfix">
                                 <div class="col-sm-4">
                                     <div class="form-group">
+                                        <label class="required">Patient ID</label>
                                         <input type="text" name="patientId" class="form-control" placeholder="Patient ID (e.g. CUST-001)" value="<?php echo htmlspecialchars($patientId); ?>" <?php echo $patientId ? 'readonly' : 'required'; ?>>
                                         <?php if($patientId) echo '<input type="hidden" name="editPatient" value="'.htmlspecialchars($patientId).'">'; ?>
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="form-group">
+                                        <label class="required">Full Name</label>
                                         <input type="text" name="name" class="form-control" placeholder="Full Name" value="<?php echo htmlspecialchars($name); ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="form-group">
+                                        <label class="required">Phone No</label>
                                         <input type="text" name="phoneNo" class="form-control" placeholder="Phone No" value="<?php echo htmlspecialchars($phoneNo); ?>" required>
                                     </div>
                                 </div>
@@ -160,15 +169,18 @@ try {
                             <div class="row clearfix">
                                 <div class="col-sm-3">
                                     <div class="form-group">
+                                        <label class="required">Email</label>
                                         <input type="email" name="email" class="form-control" placeholder="Email" value="<?php echo htmlspecialchars($email); ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-3">
                                     <div class="form-group">
+                                        <label class="required">Age</label>
                                         <input type="number" name="age" class="form-control" placeholder="Age" value="<?php echo htmlspecialchars($age); ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-3">
+                                    <label class="required">Gender</label>
                                     <select name="gender" class="form-control show-tick" required>
                                         <option value="">- Gender -</option>
                                         <option value="Male" <?php if($gender == 'Male') echo 'selected'; ?>>Male</option>
@@ -176,6 +188,7 @@ try {
                                     </select>
                                 </div>
                                 <div class="col-sm-3">
+                                    <label>Registration Date</label>
                                     <input type="text" name="Date" class="form-control" value="<?php echo htmlspecialchars($date); ?>">
                                 </div>
                             </div>
@@ -191,6 +204,7 @@ try {
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
+                                    <p class="m-t-10"><small>Can't find a doctor? <a href="add-doctor.php">Add a new doctor here</a>.</small></p>
                                 </div>
                                 <div class="col-sm-6">
                                     <h6>Link IoT Device (MAC Address)</h6>
