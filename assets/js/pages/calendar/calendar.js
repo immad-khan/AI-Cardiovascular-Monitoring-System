@@ -5,7 +5,7 @@
             center: 'title',
             right: 'next'
         },
-        defaultDate: '2018-01-12',
+        defaultDate: moment().format('YYYY-MM-DD'),
         editable: true,
         droppable: true, // this allows things to be dropped onto the calendar
         drop: function() {
@@ -16,74 +16,7 @@
             }
         },
         eventLimit: true, // allow "more" link when too many events
-        events: [
-            {
-                title: 'All Day Event',
-                start: '2018-11-01',
-                className: 'b-l b-2x b-greensea'
-            },
-            {
-                title: 'Long Event',
-                start: '2018-01-07',
-                end: '2018-01-10',
-                className: 'bg-cyan'
-            },
-            {
-                id: 999,
-                title: 'Repeating Event',
-                start: '2018-01-09T16:00:00',
-                className: 'b-l b-2x b-lightred'
-            },
-            {
-                id: 999,
-                title: 'Repeating Event',
-                start: '2018-12-16T16:00:00',
-                className: 'b-l b-2x b-success'
-            },
-            {
-                title: 'Conference',
-                start: '2018-01-11',
-                end: '2018-01-13',
-                className: 'b-l b-2x b-primary'
-            },
-            {
-                title: 'Meeting',
-                start: '2018-01-12T10:30:00',
-                end: '2018-01-12 T12:30:00',
-                className: 'b-l b-2x b-amethyst'
-            },
-            {
-                title: 'Lunch',
-                start: '2018-01-12T12:00:00',
-                className: 'b-l b-2x b-primary'
-            },
-            {
-                title: 'Meeting',
-                start: '2018-01-12T14:30:00',
-                className: 'b-l b-2x b-drank'
-            },
-            {
-                title: 'Happy Hour',
-                start: '2018-01-12T17:30:00',
-                className: 'b-l b-2x b-lightred'
-            },
-            {
-                title: 'Dinner',
-                start: '2018-12-12T20:00:00',
-                className: 'b-l b-2x b-amethyst'
-            },
-            {
-                title: 'Birthday Party',
-                start: '2018-01-13T07:00:00',
-                className: 'b-l b-2x b-primary'
-            },
-            {
-                title: 'Click for Google',
-                url: 'http://google.com/',
-                start: '2018-01-28',
-                className: 'b-l b-2x b-greensea'
-            }
-        ]
+        events: '../api/get_appointments.php'
     });
 
     // Hide default header

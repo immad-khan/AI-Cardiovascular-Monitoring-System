@@ -6,6 +6,28 @@ if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "admin") {
     header("Location: index.php?status=access_denied&type=error");
     exit();
 }
+
+// Handle Appointment Assignment
+$message = "";
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_appointment'])) {
+    $patient_id = $_POST['patient_id'];
+    $doctor_id = $_POST['doctor_id'];
+    $appointment_date = $_POST['appointment_date'];
+    $appointment_time = $_POST['appointment_time'];
+    $notes = $_POST['notes'];
+
+    try {
+        $stmt = $conn->prepare("INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, notes, status) VALUES (?, ?, ?, ?, ?, 'Scheduled')");
+        $stmt->execute([$patient_id, $doctor_id, $appointment_date, $appointment_time, $notes]);
+        $message = "<div class='alert alert-success'>Appointment assigned successfully!</div>";
+    } catch (PDOException $e) {
+        $message = "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
+    }
+}
+
+// Fetch Data for Selects
+$patients = $conn->query("SELECT \"patientID\", name FROM patients WHERE \"isActive\" = TRUE ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$doctors = $conn->query("SELECT u.\"userID\", COALESCE(p.full_name, u.username) as name FROM users u LEFT JOIN \"doctorProfile\" p ON u.\"userID\" = p.\"userID\" WHERE u.role = 'doctor' AND u.\"isActive\" = TRUE")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!doctype html>
 <html class="no-js " lang="en">
@@ -42,119 +64,76 @@ if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "admin") {
     <div class="block-header">
         <div class="row">
             <div class="col-lg-7 col-md-5 col-sm-12">
-                <h2>Calendar
-                <small>Welcome to CUST Digihealth</small>
+                <h2>Doctor Schedule
+                <small>Manage appointments and hospital events</small>
                 </h2>
             </div>
             <div class="col-lg-5 col-md-7 col-sm-12">
                 <ul class="breadcrumb float-md-right">
-                    <li class="breadcrumb-item"><a href="index-2.html"><i class="zmdi zmdi-home"></i> Home</a></li>
-                    <li class="breadcrumb-item"><a href="javascript:void(0);">App</a></li>
-                    <li class="breadcrumb-item active">Calendar</li>
+                    <li class="breadcrumb-item"><a href="dashboard.php"><i class="zmdi zmdi-home"></i> Home</a></li>
+                    <li class="breadcrumb-item active">Schedule</li>
                 </ul>
             </div>
         </div>
     </div>
     <div class="container-fluid">        
+        <?php echo $message; ?>
         <div class="row">
             <div class="col-md-12 col-lg-4 col-xl-4">
                 <div class="card">
                     <div class="body">
-                        <button type="button" class="btn btn-sm btn-round btn-success waves-effect" data-toggle="modal" data-target="#addevent">Add Events</button>
-                        <button class="btn btn-simple btn-sm btn-primary btn-round d-xl-none m-t-0 float-right" data-toggle="collapse" data-target="#open-events" aria-expanded="false" aria-controls="collapseExample"><i class="zmdi zmdi-chevron-down"></i></button>                        
+                        <button type="button" class="btn btn-primary btn-round btn-block waves-effect" data-toggle="modal" data-target="#addevent">
+                            <i class="zmdi zmdi-calendar-check"></i> Assign Appointment
+                        </button>
                     </div>
                 </div>
-                <div class="collapse-xs collapse-sm collapse" id="open-events">
-                    <div class="card">
-                        <div class="header">
-                            <h2><strong>Repeating</strong> Event</h2>
-                            <ul class="header-dropdown">
-                                <li class="dropdown"> <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i class="zmdi zmdi-more"></i> </a>
-                                    <ul class="dropdown-menu dropdown-menu-right slideUp">
-                                        <li><a href="javascript:void(0);">Action</a></li>
-                                        <li><a href="javascript:void(0);">Another action</a></li>
-                                        <li><a href="javascript:void(0);">Something else</a></li>
-                                    </ul>
-                                </li>
-                                <li class="remove">
-                                    <a role="button" class="boxs-close"><i class="zmdi zmdi-close"></i></a>
-                                </li>
-                            </ul>                        
-                        </div>
-                        <div class="body">
-                            <div class="event-name b-lightred row">
-                                <div class="col-2 text-center">
-                                    <h4>09<span>Dec</span><span>2024</span></h4>
-                                </div>
-                                <div class="col-10">
-                                    <h6>Repeating Event</h6>
-                                    <p>It is a long established fact that a reader will be distracted</p>
-                                    <address><i class="zmdi zmdi-pin"></i> 123 6th St. Melbourne, FL 32904</address>
-                                </div>
-                            </div>
-                            <div class="event-name b-greensea row">
-                                <div class="col-2 text-center">
-                                    <h4>16<span>Dec</span><span>2024</span></h4>
-                                </div>
-                                <div class="col-10">
-                                    <h6>Repeating Event</h6>
-                                    <p>It is a long established fact that a reader will be distracted</p>
-                                    <address><i class="zmdi zmdi-pin"></i> 123 6th St. Melbourne, FL 32904</address>
-                                </div>
-                            </div>
-                            <div class="event-name b-primary row">
-                                <div class="col-2 text-center">
-                                    <h4>11<span>Dec</span><span>2024</span></h4>
-                                </div>
-                                <div class="col-10">
-                                    <h6>Conference</h6>
-                                    <p>It is a long established fact that a reader will be distracted</p>
-                                    <address><i class="zmdi zmdi-pin"></i> 123 6th St. Melbourne, FL 32904</address>
-                                </div>
+                <div class="card">
+                    <div class="header">
+                        <h2><strong>Recent</strong> Assignments</h2>
+                    </div>
+                    <div class="body">
+                        <div class="row">
+                            <div class="col-12">
+                                <ul class="list-unstyled">
+                                    <?php
+                                    $recent = $conn->query("SELECT a.*, p.name as patient_name, COALESCE(dp.full_name, u.username) as doctor_name 
+                                                            FROM appointments a 
+                                                            JOIN patients p ON a.patient_id = p.\"patientID\"
+                                                            JOIN users u ON a.doctor_id = u.\"userID\"
+                                                            LEFT JOIN \"doctorProfile\" dp ON u.\"userID\" = dp.\"userID\"
+                                                            ORDER BY a.created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+                                    if(empty($recent)) {
+                                        echo "<li class='text-muted'>No recent appointments</li>";
+                                    }
+                                    foreach($recent as $apt) {
+                                        $statusClass = $apt['status'] == 'Completed' ? 'badge-success' : 'badge-info';
+                                        echo "<li class='mb-3 p-2 border-bottom'>
+                                                <div class='d-flex justify-content-between'>
+                                                    <h6 class='mb-0 text-primary'>".htmlspecialchars($apt['patient_name'])."</h6>
+                                                    <span class='badge $statusClass text-white'>".date('h:i A', strtotime($apt['appointment_time']))."</span>
+                                                </div>
+                                                <p class='text-muted small mb-1'>Assigned to: ".htmlspecialchars($apt['doctor_name'])."</p>
+                                                <small><i class='zmdi zmdi-calendar'></i> ".date('d M Y', strtotime($apt['appointment_date']))."</small>
+                                              </li>";
+                                    }
+                                    ?>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="header">
-                            <h2><strong>Activity</strong></h2>
-                            <ul class="header-dropdown">
-                                <li class="dropdown"> <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i class="zmdi zmdi-more"></i> </a>
-                                    <ul class="dropdown-menu dropdown-menu-right slideUp">
-                                        <li><a href="javascript:void(0);">Action</a></li>
-                                        <li><a href="javascript:void(0);">Another action</a></li>
-                                        <li><a href="javascript:void(0);">Something else</a></li>
-                                    </ul>
-                                </li>
-                                <li class="remove">
-                                    <a role="button" class="boxs-close"><i class="zmdi zmdi-close"></i></a>
-                                </li>
-                            </ul>                        
-                        </div>
-                        <div class="body">                                                    
-                            <div class="event-name b-primary row">
-                                <div class="col-2 text-center">
-                                    <h4>13<span>Dec</span><span>2024</span></h4>
-                                </div>
-                                <div class="col-10">
-                                    <h6>Birthday</h6>
-                                    <p>It is a long established fact that a reader will be distracted</p>
-                                    <address><i class="zmdi zmdi-pin"></i> 123 6th St. Melbourne, FL 32904</address>
-                                </div>
-                            </div>
-                        </div>
-                    </div>                
                 </div>
             </div>
             <div class="col-md-12 col-lg-8 col-xl-8">
                 <div class="card">
-                    <div class="body">
-                        <button class="btn btn-primary btn-sm btn-round waves-effect" id="change-view-today">today</button>
-                        <button class="btn btn-default btn-sm btn-simple btn-round waves-effect" id="change-view-day" >Day</button>
-                        <button class="btn btn-default btn-sm btn-simple btn-round waves-effect" id="change-view-week">Week</button>
-                        <button class="btn btn-default btn-sm btn-simple btn-round waves-effect" id="change-view-month">Month</button>                        
+                    <div class="header d-flex justify-content-between align-items-center">
+                        <h2><strong>Calendar</strong> View</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-default btn-sm waves-effect" id="change-view-today">Today</button>
+                            <button class="btn btn-default btn-sm waves-effect" id="change-view-day">Day</button>
+                            <button class="btn btn-default btn-sm waves-effect" id="change-view-week">Week</button>
+                            <button class="btn btn-default btn-sm waves-effect" id="change-view-month">Month</button>
+                        </div>
                     </div>
-                </div>
-                <div class="card">
                     <div class="body">
                         <div id="calendar"></div>
                     </div>
@@ -168,29 +147,48 @@ if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "admin") {
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="title" id="defaultModalLabel">Add Event</h4>
+                <h4 class="title">Assign Doctor Appointment</h4>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <div class="form-line">
-                        <input type="number" class="form-control" placeholder="Event Date">
+            <form action="" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select Patient</label>
+                        <select name="patient_id" class="form-control" required>
+                            <option value="">-- Choose Patient --</option>
+                            <?php foreach($patients as $p): ?>
+                                <option value="<?php echo $p['patientID']; ?>"><?php echo htmlspecialchars($p['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
+                    <div class="form-group">
+                        <label>Select Doctor</label>
+                        <select name="doctor_id" class="form-control" required>
+                            <option value="">-- Choose Doctor --</option>
+                            <?php foreach($doctors as $d): ?>
+                                <option value="<?php echo $d['userID']; ?>"><?php echo htmlspecialchars($d['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Appointment Date</label>
+                            <input type="date" name="appointment_date" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Appointment Time</label>
+                            <input type="time" name="appointment_time" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Notes</label>
+                        <textarea name="notes" class="form-control no-resize" rows="3" placeholder="e.g. Heart checkup, ECG monitoring..."></textarea>
+                    </div>       
                 </div>
-                <div class="form-group">
-                    <div class="form-line">
-                        <input type="text" class="form-control" placeholder="Event Title">
-                    </div>
+                <div class="modal-footer">
+                    <button type="submit" name="assign_appointment" class="btn btn-primary btn-round waves-effect">Assign Now</button>
+                    <button type="button" class="btn btn-danger btn-simple btn-round waves-effect" data-dismiss="modal">Cancel</button>
                 </div>
-                <div class="form-group">
-                    <div class="form-line">
-                        <textarea class="form-control no-resize" placeholder="Event Description..."></textarea>
-                    </div>
-                </div>       
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary btn-round waves-effect">Add</button>
-                <button type="button" class="btn btn-simple btn-round waves-effect" data-dismiss="modal">CLOSE</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>

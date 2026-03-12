@@ -81,6 +81,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                                         <p class="text-muted">' . htmlspecialchars($row['phone_number']) . '</p>      
                                         <p class="text-muted" style="min-height:60px;">' . htmlspecialchars(substr($row['description'] ?? '', 0, 100)) . '...</p>                           
                                         <div class="m-t-20">
+                                            <a href="doctor-profile.php?id=' . $row['userID'] . '" class="btn btn-primary btn-round btn-simple">View Profile</a>
                                             <a href="edit-doctor.php?id=' . $row['userID'] . '" class="btn btn-info btn-round btn-simple">Edit</a>
                                             <a href="delete-doctor.php?id=' . $row['userID'] . '" class="btn btn-danger btn-round btn-simple" onclick="return confirm(\'Are you sure you want to delete this doctor account?\')">Delete</a>
                                         </div>
