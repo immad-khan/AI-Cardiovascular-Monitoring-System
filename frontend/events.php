@@ -142,51 +142,54 @@ $doctors = $conn->query("SELECT u.\"userID\", COALESCE(p.full_name, u.username) 
         </div>        
     </div>
 </section>
-<!-- Default Size -->
+<!-- Appointment Assignment Modal -->
 <div class="modal fade" id="addevent" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="title">Assign Doctor Appointment</h4>
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:15px; overflow:hidden;">
+            <div class="modal-header border-0 bg-light p-3">
+                <h5 class="title mb-0" style="color:#333; font-weight:600;">Assign Doctor Appointment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <form action="" method="POST">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Select Patient</label>
-                        <select name="patient_id" class="form-control" required>
+                <div class="modal-body p-4">
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Select Patient</label>
+                        <select name="patient_id" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
                             <option value="">-- Choose Patient --</option>
                             <?php foreach($patients as $p): ?>
                                 <option value="<?php echo $p['patientID']; ?>"><?php echo htmlspecialchars($p['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Select Doctor</label>
-                        <select name="doctor_id" class="form-control" required>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Select Doctor</label>
+                        <select name="doctor_id" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
                             <option value="">-- Choose Doctor --</option>
                             <?php foreach($doctors as $d): ?>
                                 <option value="<?php echo $d['userID']; ?>"><?php echo htmlspecialchars($d['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Appointment Date</label>
-                            <input type="date" name="appointment_date" class="form-control" required>
+                    <div class="row">
+                        <div class="form-group col-6 mb-4">
+                            <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Date</label>
+                            <input type="date" name="appointment_date" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label>Appointment Time</label>
-                            <input type="time" name="appointment_time" class="form-control" required>
+                        <div class="form-group col-6 mb-4">
+                            <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Time</label>
+                            <input type="time" name="appointment_time" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Additional Notes</label>
-                        <textarea name="notes" class="form-control no-resize" rows="3" placeholder="e.g. Heart checkup, ECG monitoring..."></textarea>
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Additional Notes</label>
+                        <textarea name="notes" class="form-control no-resize" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; background:transparent; box-shadow:none;" rows="3" placeholder="e.g. Heart checkup, ECG monitoring..."></textarea>
                     </div>       
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" name="assign_appointment" class="btn btn-primary btn-round waves-effect">Assign Now</button>
-                    <button type="button" class="btn btn-danger btn-simple btn-round waves-effect" data-dismiss="modal">Cancel</button>
+                <div class="modal-footer border-0 p-3 bg-light">
+                    <button type="button" class="btn btn-simple btn-round waves-effect" data-dismiss="modal">Cancel</button>
+                    <button type="submit" name="assign_appointment" class="btn btn-primary btn-round px-4 shadow-sm" style="background:#00cfd1; border:none; font-weight:600;">Assign Now</button>
                 </div>
             </form>
         </div>
