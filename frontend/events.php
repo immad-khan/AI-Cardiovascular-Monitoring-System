@@ -153,10 +153,34 @@ $doctors = $conn->query("SELECT u.\"userID\", COALESCE(p.full_name, u.username) 
                 </button>
             </div>
             <form action="" method="POST">
+                <style>
+                    .modern-form-control {
+                        border: none !important;
+                        border-bottom: 2px solid #f1f1f1 !important;
+                        border-radius: 0 !important;
+                        height: 45px !important;
+                        padding-left: 5px !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
+                        -webkit-appearance: none !important;
+                        -moz-appearance: none !important;
+                        appearance: none !important;
+                    }
+                    .modern-form-control:focus {
+                        border-bottom: 2px solid #00cfd1 !important;
+                    }
+                    .custom-label {
+                        font-weight: 600;
+                        font-size: 0.85rem;
+                        color: #444;
+                        margin-bottom: 5px;
+                        display: block;
+                    }
+                </style>
                 <div class="modal-body p-4">
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Select Patient</label>
-                        <select name="patient_id" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
+                        <label class="custom-label">Select Patient</label>
+                        <select name="patient_id" class="form-control modern-form-control" required>
                             <option value="">-- Choose Patient --</option>
                             <?php foreach($patients as $p): ?>
                                 <option value="<?php echo $p['patientID']; ?>"><?php echo htmlspecialchars($p['name']); ?></option>
@@ -164,8 +188,8 @@ $doctors = $conn->query("SELECT u.\"userID\", COALESCE(p.full_name, u.username) 
                         </select>
                     </div>
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Select Doctor</label>
-                        <select name="doctor_id" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
+                        <label class="custom-label">Select Doctor</label>
+                        <select name="doctor_id" class="form-control modern-form-control" required>
                             <option value="">-- Choose Doctor --</option>
                             <?php foreach($doctors as $d): ?>
                                 <option value="<?php echo $d['userID']; ?>"><?php echo htmlspecialchars($d['name']); ?></option>
@@ -174,17 +198,17 @@ $doctors = $conn->query("SELECT u.\"userID\", COALESCE(p.full_name, u.username) 
                     </div>
                     <div class="row">
                         <div class="form-group col-6 mb-4">
-                            <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Date</label>
-                            <input type="date" name="appointment_date" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
+                            <label class="custom-label">Date</label>
+                            <input type="date" name="appointment_date" class="form-control modern-form-control" required>
                         </div>
                         <div class="form-group col-6 mb-4">
-                            <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Time</label>
-                            <input type="time" name="appointment_time" class="form-control" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; height: 45px; background:transparent; box-shadow:none;" required>
+                            <label class="custom-label">Time</label>
+                            <input type="time" name="appointment_time" class="form-control modern-form-control" required>
                         </div>
                     </div>
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark mb-1 ml-1" style="font-size:0.9rem;">Additional Notes</label>
-                        <textarea name="notes" class="form-control no-resize" style="border:none; border-bottom: 2px solid #f1f1f1; border-radius:0; background:transparent; box-shadow:none;" rows="3" placeholder="e.g. Heart checkup, ECG monitoring..."></textarea>
+                        <label class="custom-label">Additional Notes</label>
+                        <textarea name="notes" class="form-control modern-form-control" style="height: auto !important;" rows="3" placeholder="e.g. Heart checkup, ECG monitoring..."></textarea>
                     </div>       
                 </div>
                 <div class="modal-footer border-0 p-3 bg-light">
