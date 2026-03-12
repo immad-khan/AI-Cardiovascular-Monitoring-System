@@ -1,101 +1,42 @@
+<?php
+session_start();
+include("../config/DB_Config.php");
+
+if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "admin") {
+    header("Location: index.php?status=access_denied&type=error");
+    exit();
+}
+?>
 <!doctype html>
 <html class="no-js " lang="en">
-
-<!-- Mirrored from hms.cognisun.net/oreo/html/light/events.php by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 06 Oct 2024 17:19:23 GMT -->
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-<meta name="description" content="Responsive Bootstrap 4 and web Application ui kit.">
-
-<title>Appointments - CUST Digihealth</title>
+<title>Doctor Schedule - CUST Digihealth</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
-<!-- Favicon-->
-<link rel="stylesheet" href="./assets/plugins/bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="./assets/plugins/fullcalendar/fullcalendar.min.css">
-<!-- Custom Css -->
-<link rel="stylesheet" href="./assets/css/main.css">
-<link rel="stylesheet" href="./assets/css/color_skins.css">
+<link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/plugins/fullcalendar/fullcalendar.min.css">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/color_skins.css">
 </head>
 <body class="theme-cyan">
-<!-- Page Loader -->
 <div class="page-loader-wrapper">
     <div class="loader">
-        <div class="m-t-30"><img class="zmdi-hc-spin" src="./assets/images/logo.svg" width="48" height="48" alt="Oreo"></div>
+        <div class="m-t-30"><img class="zmdi-hc-spin" src="../assets/images/logo.svg" width="48" height="48" alt="Oreo"></div>
         <p>Please wait...</p>        
     </div>
 </div>
-<!-- Overlay For Sidebars -->
 <div class="overlay"></div>
-<!-- Top Bar -->
 <nav class="navbar p-l-5 p-r-5">
     <?php include("top_nav.php") ?>
 </nav>
-<!-- Left Sidebar -->
+
 <aside id="leftsidebar" class="sidebar">
-    <ul class="nav nav-tabs">
-         <li class="nav-item"><a class="nav-link active" data-toggle="tab" style="background: #00cfd1;
-    color: white;" href="#dashboard"><img src="./assets/images/logo.svg" width="30" alt="CUST Digihealth"> &nbsp; CUST  DIGIHEALTH </a></li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane stretchRight active" id="dashboard">
-            <div class="menu">
-                <ul class="list">
-                   <li>
-                        <div class="user-info">
-                            <div class="image"><a href="profile.html" class=" waves-effect waves-block"><img src="./assets/images/admin.png" alt="User"></a></div>
-                            <div class="detail">
-                                <h4>Super Administrator</h4>
-                                <small>Waqas</small>                        
-                            </div>
-                        </div>
-                    </li>	
-                    <li class="header">MAIN</li>
-                    <li><a href="index-2.html"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a></li>            
-                    <li class="active open"><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-account-add"></i><span>Doctors</span> </a>
-                        <ul class="ml-menu">
-                            <li><a href="doctors.php">All Doctors</a></li>
-                            <li><a href="add-doctor.php">Add Doctor</a></li>     
-                            <li class="active"><a href="events.php">Doctor Schedule</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-account-o"></i><span>Patients</span> </a>
-                        <ul class="ml-menu">
-                            <li><a href="patients.php">All Patients</a></li>
-                            <li><a href="add-patient.php">Add Patient</a></li>
-                        </ul>
-                    </li>
-					 <li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-swap-alt"></i><span>ECG Devices</span> </a>
-                        <ul class="ml-menu">
-                            <li><a href="devices.php">All Devices</a></li>
-                            <li><a href="add-device.php">Add Device</a></li>         
-                        </ul>
-                    </li>
-                    <li><a href="javascript:void(0);" class="menu-toggle"><i class="zmdi zmdi-label-alt"></i><span>Departments</span> </a>
-                        <ul class="ml-menu">
-                            <li><a href="add-departments.html">Add</a></li>
-                            <li><a href="all-Departments.html">All Departments</a></li>
-                            <li><a href="javascript:void(0);">Cardiology</a></li>
-                            <li><a href="javascript:void(0);">Pulmonology</a></li>
-                            <li><a href="javascript:void(0);">Gynecology</a></li>
-                            <li><a href="javascript:void(0);">Neurology</a></li>
-                            <li><a href="javascript:void(0);">Urology</a></li>
-                            <li><a href="javascript:void(0);">Gastrology</a></li>
-                            <li><a href="javascript:void(0);">Pediatrician</a></li>
-                            <li><a href="javascript:void(0);">Laboratory</a></li>
-                        </ul>
-                    </li>
-                    
-                </ul>
-            </div>
-        </div>
-        
-    </div>    
+    <?php include("left_sidebar.php") ?>
 </aside>
-<!-- Right Sidebar -->
 
 <?php include("rightsidebar.php") ?>
-<!-- Chat-launcher -->
 
 <section class="content page-calendar">
     <div class="block-header">
@@ -254,13 +195,13 @@
     </div>
 </div>
 <!-- Jquery Core Js --> 
-<script src="./assets/bundles/libscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
-<script src="./assets/bundles/vendorscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
+<script src="../assets/bundles/libscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
+<script src="../assets/bundles/vendorscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
 
-<script src="./assets/bundles/fullcalendarscripts.bundle.js"></script><!--/ calender javascripts --> 
+<script src="../assets/bundles/fullcalendarscripts.bundle.js"></script><!--/ calender javascripts --> 
 
-<script src="./assets/bundles/mainscripts.bundle.js"></script><!-- Custom Js --> 
-<script src="./assets/js/pages/calendar/calendar.js"></script>
+<script src="../assets/bundles/mainscripts.bundle.js"></script><!-- Custom Js --> 
+<script src="../assets/js/pages/calendar/calendar.js"></script>
 </body>
 
 <!-- Mirrored from hms.cognisun.net/oreo/html/light/events.php by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 06 Oct 2024 17:19:26 GMT -->
