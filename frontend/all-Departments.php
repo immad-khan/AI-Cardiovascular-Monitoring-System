@@ -26,6 +26,7 @@ try {
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 </head>
 <body class="theme-cyan">
+<div class="overlay"></div>
 <nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php"); ?></nav>
 <!-- Left Sidebar -->
 <aside id="leftsidebar" class="sidebar">
@@ -55,5 +56,11 @@ try {
         </div>
     </div>
 </section>
+
+<!-- Jquery Core Js --> 
+<script src="../assets/bundles/libscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
+<script src="../assets/bundles/vendorscripts.bundle.js"></script> <!-- Lib Scripts Plugin Js --> 
+
+<script src="../assets/bundles/mainscripts.bundle.js"></script><!-- Custom Js --> 
 </body>
 </html>
