@@ -3,8 +3,7 @@ include("config/DB_Config.php");
 
 try {
     // Create departments table
-    $sql = "
-    CREATE TABLE IF NOT EXISTS departments (
+    $createTable = 'CREATE TABLE IF NOT EXISTS departments (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL UNIQUE,
         description TEXT,
@@ -12,24 +11,26 @@ try {
         "totalDoctors" INT DEFAULT 0,
         "isActive" BOOLEAN DEFAULT TRUE,
         "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+    );';
+    $conn->exec($createTable);
+    echo "Departments table created successfully.<br>";
 
-    // Insert sample data if empty
-    $check = $conn->query(\"SELECT COUNT(*) FROM departments\");
-    if ($check->fetchColumn() == 0) {
-        $conn->exec(\"
-            INSERT INTO departments (name, description, \"headOfDepartment\", \"totalDoctors\") VALUES 
-            ('Cardiology', 'Heart and cardiovascular health monitoring', 'Dr. Ehsan Ullah', 4),
-            ('Neurology', 'Brain and nervous system diagnostics', 'Dr. Sarah Ahmed', 3),
-            ('Pathology', 'Clinical diagnostic laboratory services', 'Dr. Kashif Malik', 2),
-            ('General Medicine', 'Primary care and general health checkups', 'Dr. Fatima Khan', 6)
-        \");
-        echo \"Departments table created and seeded successfully!<br>\";
+    // Insert sample data
+    $count = $conn->query("SELECT count(*) FROM departments")->fetchColumn();
+    if ($count == 0 || $count < 4) {
+        $insertData = 'INSERT INTO departments (name, description, "headOfDepartment", "totalDoctors") VALUES 
+            (\'Cardiology\', \'Heart and cardiovascular health monitoring\', \'Dr. Ehsan Ullah\', 4),
+            (\'Neurology\', \'Brain and nervous system diagnostics\', \'Dr. Sarah Ahmed\', 3),
+            (\'Pathology\', \'Clinical diagnostic laboratory services\', \'Dr. Kashif Malik\', 2),
+            (\'General Medicine\', \'Primary care and general health checkups\', \'Dr. Fatima Khan\', 6)
+            ON CONFLICT (name) DO NOTHING';
+        $conn->exec($insertData);
+        echo "Sample data inserted.<br>";
     } else {
-        echo \"Departments table already exists and contains data.<br>\";
+        echo "Departments already seeded.<br>";
     }
 
 } catch (PDOException $e) {
-    die(\"Error creating table: \" . $e->getMessage());
+    die("Database Error: " . $e->getMessage());
 }
 ?>
