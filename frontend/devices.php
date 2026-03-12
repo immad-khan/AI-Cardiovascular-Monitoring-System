@@ -160,22 +160,27 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                                     <tbody>
 									
 									<?php 
-										// Fetch all ECG devices
-										$sql = "SELECT id, mac_address, model FROM ecg_devices";
-										$stmt = $conn->prepare($sql);
-										$stmt->execute();
-										$devices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+										// Fetch all monitoring devices (Corrected table and column names)
+										try {
+											$sql = "SELECT \"deviceID\", mac_address, model, status FROM monitoring_devices";
+											$stmt = $conn->prepare($sql);
+											$stmt->execute();
+											$devices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-										if ($devices) {
-											foreach ($devices as $row) {
-												echo "<tr>";
-												echo "<td>" . htmlspecialchars($row['id']) . "</td>";
-												echo "<td>" . htmlspecialchars($row['mac_address']) . "</td>";
-												echo "<td>" . htmlspecialchars($row['model']) . "</td>";
-												echo "</tr>";
+											if ($devices) {
+												foreach ($devices as $row) {
+													echo "<tr>";
+													echo "<td>" . htmlspecialchars($row['deviceID']) . "</td>";
+													echo "<td>" . htmlspecialchars($row['mac_address']) . "</td>";
+													echo "<td>" . htmlspecialchars($row['model']) . "</td>";
+													echo "<td><span class='badge badge-info'>" . htmlspecialchars($row['status'] ?? 'Active') . "</span></td>";
+													echo "</tr>";
+												}
+											} else {
+												echo "<tr><td colspan='4' class='text-center'>No monitoring devices found in the database.</td></tr>";
 											}
-										} else {
-											echo "<tr><td colspan='3' class='text-center'>No devices found</td></tr>";
+										} catch (PDOException $e) {
+											echo "<tr><td colspan='4' class='text-center text-danger'>Database Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
 										}
 									?>
                                        
