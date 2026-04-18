@@ -1,5 +1,5 @@
-﻿<?php 
-include("./config/DB_Config.php");
+<?php 
+include_once(__DIR__ . "/config/DB_Config.php");
 // Start the session
 session_start();
 // Check if the user is logged in and if the user type is admin
@@ -39,7 +39,7 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
 <div class="overlay"></div>
 <!-- Top Bar -->
 <nav class="navbar p-l-5 p-r-5">
-    <?php include("top_nav.php") ?>
+    <?php include("frontend/top_nav.php") ?>
 </nav>
 <!-- Left Sidebar -->
 <aside id="leftsidebar" class="sidebar">
@@ -108,7 +108,7 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
 </aside>
 <!-- Right Sidebar -->
 
-<?php include("rightsidebar.php") ?>
+<?php include("frontend/rightsidebar.php") ?>
 
 <section class="content">
     <div class="block-header">
@@ -172,49 +172,32 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                                     <tbody>
 									
 									<?php 
-										// Fetch all patients
-										// Step 1: Fetch all ECG devices
-										$sql = "SELECT * FROM esp_ecg_predictions where PDR is not null and PDR != '' and datetime>='2024-12-19' and avgDelay>0 and avgDelay<9999 order by record_id desc";
+										// Step 1: Fetch all ECG devices using PDO
+										$sql = "SELECT * FROM esp_ecg_predictions where PDR is not null and PDR != '' and datetime>='2024-12-19' and \"AvgDelay\">0 and \"AvgDelay\"<9999 order by record_id desc";
 										
-										$result = $conn->query($sql);
-                                        $count = $result->num_rows;
-										// Check if there are results
-										if ($result->num_rows > 0) {
-											   while ($row = $result->fetch_assoc()) {
+                                        try {
+                                            $stmt = $conn->query($sql);
+                                            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            $count = count($rows);
+
+                                            foreach ($rows as $row) {
 												echo "<tr>";
 												echo "<td>" . $count--  . "</td>";
 												echo "<td>" . $row['mac_address'] . "</td>";
-												/*if($row['final_prediction'] == -1){
-												    
-												echo "<td>Invalid Reading</td>";
-												    
-												}
-												if($row['final_prediction'] == 1){
-												    
-												echo "<td>Normal ECG</td>";
-												    
-												}
-												if($row['final_prediction'] == 0){
-												    
-												echo "<td>Abnormal ECG</td>";
-												    
-												}*/
 												echo "<td>" . round($row['PDR']) . "% </td>";
-												//echo "<td>" . round($row['PLR']) . "% </td>";
 												echo "<td>" . round($row['HighestDelay']) . " ms</td>";
-												
 												echo "<td>" . round($row['AvgDelay']) . " ms</td>";
 												echo "<td>" . round($row['Throughput']) . " bps </td>";
 												echo "<td>" . round($row['reading_duration']) . " sec </td>";
-												
 												echo "<td>" . round($row['fileSizeInBytes']/1024) . " KBs</td>";
 												echo "<td>" . $row['totalReceivedSamples'] . " </td>";
 												echo "<td>" . $row['device'] . "</td>";
 												echo "<td>" . $row['datetime'] . "</td>";
 												echo "</tr>";
 											}
-																					
-										}
+                                        } catch (PDOException $e) {
+                                            echo '<tr><td colspan="11" class="text-danger">Error: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
+                                        }
 									?>
                                        
                                     </tbody>

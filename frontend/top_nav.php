@@ -1,5 +1,5 @@
 <?php
-include_once("../backend/alert_logic.php");
+include_once(__DIR__ . "/../backend/alert_logic.php");
 $active_alerts = getActiveAlerts($conn);
 $alert_count = count($active_alerts);
 ?>

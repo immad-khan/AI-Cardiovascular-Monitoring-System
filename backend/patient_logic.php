@@ -1,6 +1,6 @@
-﻿<?php
+<?php
 // backend/patient_logic.php
-include_once("../config/DB_Config.php");
+include_once(__DIR__ . "/../config/DB_Config.php");
 
 /**
  * Fetches all MAC addresses that are currently linked to patients

@@ -1,6 +1,6 @@
 <?php
 // backend/auth_logic.php
-include_once("../config/DB_Config.php");
+include_once(__DIR__ . "/../config/DB_Config.php");
 
 /**
  * Handles User Login

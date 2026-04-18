@@ -1,6 +1,6 @@
 <?php
 // backend/alert_logic.php
-include_once("../config/DB_Config.php");
+include_once(__DIR__ . "/../config/DB_Config.php");
 
 /**
  * Fetches recent critical alerts for the logged-in doctor/admin

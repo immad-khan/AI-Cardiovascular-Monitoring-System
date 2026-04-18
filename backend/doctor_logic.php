@@ -1,6 +1,6 @@
-﻿<?php
+<?php
 // backend/doctor_logic.php
-include_once("../config/DB_Config.php");
+include_once(__DIR__ . "/../config/DB_Config.php");
 
 function handleDoctorRegistration($conn, $postData, $filesData, $sessionData) {
     $username = htmlspecialchars(trim($postData['username'] ?? ''));

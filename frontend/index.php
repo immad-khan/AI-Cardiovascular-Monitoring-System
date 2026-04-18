@@ -115,6 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <img src="../assets/images/logo.svg" alt="">
                         </div>
                         <h5>Sign In</h5>
+                        <p class="text-muted">Personalized Portal for Admin, Doctor & Patients</p>
                         <?php if (isset($_GET['status'])): ?>
                             <div class="alert alert-<?php echo (isset($_GET['type']) && $_GET['type'] == 'error') ? 'danger' : 'success'; ?>" style="margin-top: 10px;">
                                 <?php echo htmlspecialchars($_GET['status']); ?>
@@ -133,7 +134,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <span class="input-group-addon">
                                 <i class="zmdi zmdi-lock"></i>
                             </span>
-                        </div>                        
+                        </div>
+                        <div class="m-t-20 text-center">
+                            <small class="text-white-50">Authorized access only for: <br>
+                            <span class="badge badge-primary">Admins</span> 
+                            <span class="badge badge-info">Doctors</span> 
+                            <span class="badge badge-success">Patients</span></small>
+                        </div>
                     </div>
                     <div class="footer text-center">
                         <button type="submit" class="btn btn-primary btn-round btn-lg btn-block waves-effect waves-light">SIGN IN</button>
