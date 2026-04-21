@@ -32,7 +32,8 @@ $email = '';
 $age = '';
 $gender = '';
 $medicalHistory = '';
-$assignedDoctorID = null;
+// Auto-assign the doctor if the current user is a doctor
+$assignedDoctorID = ($_SESSION['user_type'] === 'doctor') ? $_SESSION['user_id'] : null;
 $staffName = '';
 $wardNo = '';
 $date = date('Y-m-d H:i:s');

@@ -28,13 +28,13 @@ function handlePatientAction($conn, $postData) {
     $gender = htmlspecialchars(trim($postData['gender'] ?? ''));
     $medical_history = htmlspecialchars(trim($postData['medicalHistory'] ?? ''));
     
-    // Note: In Postgres, we should ideally use assignedDoctorID (int) instead of a comma-separated list
-    // For now, we take the FIRST doctor if multiple selected, but if we want to support many, 
-    // we should use a junction table. Following current ERD:
-    $assignedDoctorID = isset($postData['AssociatedDoctors']) ? (int)$postData['AssociatedDoctors'][0] : null;
+    // Ensure assignedDoctorID is null if not selected, rather than 0 which causes FK violations
+    $assignedDoctorID = (isset($postData['AssociatedDoctors']) && !empty($postData['AssociatedDoctors'][0])) 
+                        ? (int)$postData['AssociatedDoctors'][0] 
+                        : null;
     
-    $staff_name = htmlspecialchars(trim($postData['StaffName'] ?? ''));
-    $ward_no = htmlspecialchars(trim($postData['WardNo'] ?? ''));
+    $staff_name = htmlspecialchars(trim($postData['staff_name'] ?? ''));
+    $ward_no = htmlspecialchars(trim($postData['ward_no'] ?? ''));
     $date = htmlspecialchars(trim($postData['Date'] ?? date('Y-m-d H:i:s')));
     $mac_address = htmlspecialchars(trim($postData['mac_address'] ?? ''));
 
