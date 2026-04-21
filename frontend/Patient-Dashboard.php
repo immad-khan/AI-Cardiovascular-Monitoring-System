@@ -12,9 +12,9 @@ $userID = $_SESSION["user_id"];
 
 try {
     // 1. Fetch Patient ID linked to this User Account
-    $stmt = $conn->prepare("SELECT \"patientID\", name, age, gender, medical_history FROM patients WHERE \"userID\" = ? OR email = ? LIMIT 1");
-    // Supporting both userID mapping and email fallback (common in multi-role systems)
-    $stmt->execute([$userID, $_SESSION["email"]]);
+    $stmt = $conn->prepare("SELECT \"patientID\", name, age, gender, medical_history FROM patients WHERE email = ? LIMIT 1");
+    // Using email mapping which is consistent across users and patients tables
+    $stmt->execute([$_SESSION["email"]]);
     $patientData = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$patientData) {

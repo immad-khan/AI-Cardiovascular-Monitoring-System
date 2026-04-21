@@ -85,10 +85,8 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                                     <thead>
                                         <tr>                  
                                             <th>Patient ID</th>
-                                            <th>Name</th>
                                             <th>Gender</th>
-                                            <th>Age</th>
-                                            <th>Assigned Doctor</th>
+                                            <th>Associated Doctors</th>
                                             <th>Attached Device</th>
                                             <th>Date</th>
                                             <th>Actions</th>
@@ -104,13 +102,12 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                                                 $params[] = $_SESSION['user_id'];
                                             }
 
-                                            $sql = "SELECT p.*, u.username as doctor_name, dp.full_name as doctor_full_name, 
+                                            $sql = "SELECT p.*, dp.full_name as doctor_name, dp.specialization,
                                                     (SELECT md.model || ' (' || md.mac_address || ')' 
                                                      FROM monitoring_devices md 
                                                      WHERE md.\"patientID\" = p.\"patientID\" LIMIT 1) as device_info
                                                     FROM patients p 
-                                                    LEFT JOIN users u ON p.\"assignedDoctorID\" = u.\"userID\"
-                                                    LEFT JOIN \"doctorProfile\" dp ON u.\"userID\" = dp.\"userID\"
+                                                    LEFT JOIN \"doctorProfile\" dp ON p.\"assignedDoctorID\" = dp.\"userID\"
                                                     WHERE p.\"isActive\" = TRUE $doctor_condition
                                                     ORDER BY p.date DESC";
 
@@ -118,25 +115,22 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                                             $stmt->execute($params);
 
                                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                $doctorDisplay = $row['doctor_full_name'] ?? $row['doctor_name'] ?? 'Unassigned';
+                                                $doctorDisplay = $row['doctor_name'] ? htmlspecialchars($row['doctor_name'] . " (" . $row['specialization'] . ")") : 'Unassigned';
                                                 $deviceDisplay = $row['device_info'] ?? 'None';
                                                 
                                                 echo '<tr>
-                                                    <td><a href="./Patient-Profile.php?patientId=' . htmlspecialchars($row['patientID']) . '">'.htmlspecialchars($row['patientID']).'</a></td>
-                                                    <td>' . htmlspecialchars($row['name']) . '</td>
+                                                    <td><a href="./Patient-Profile.php?patientId=' . htmlspecialchars($row['patientID']) . '" class="text-info"><strong>'.htmlspecialchars($row['patientID']).'</strong></a></td>
                                                     <td>' . htmlspecialchars($row['gender']) . '</td>
-                                                    <td>' . htmlspecialchars($row['age']) . '</td>
-                                                    <td>' . htmlspecialchars($doctorDisplay) . '</td>
+                                                    <td>' . $doctorDisplay . '</td>
                                                     <td>' . htmlspecialchars($deviceDisplay) . '</td>
-                                                    <td>' . date('d M Y', strtotime($row['date'])) . '</td>
+                                                    <td>' . date('l d F Y - H:i', strtotime($row['date'])) . '</td>
                                                     <td>
-                                                        <a href="./Patient-Profile.php?patientId=' . htmlspecialchars($row['patientID']) . '" class="btn btn-sm btn-info"><i class="zmdi zmdi-eye"></i></a>
-                                                        <button class="btn btn-sm btn-danger"><i class="zmdi zmdi-delete"></i></button>
+                                                        <a href="./add-patient.php?patientId=' . htmlspecialchars($row['patientID']) . '" class="btn btn-sm btn-default">Edit</a>
                                                     </td>
                                                 </tr>';
                                             }
                                         } catch (PDOException $e) {
-                                            echo '<tr><td colspan="8" class="text-danger">Error: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
+                                            echo '<tr><td colspan="6" class="text-danger">Error: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
                                         }
                                     ?>
                                     </tbody>

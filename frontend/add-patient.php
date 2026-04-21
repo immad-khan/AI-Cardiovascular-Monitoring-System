@@ -1,4 +1,4 @@
-﻿<?php 
+<?php 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 include("../config/DB_Config.php");
@@ -136,101 +136,101 @@ try {
                 <div class="col-lg-12 col-md-12 col-sm-12">
                     <div class="card">
                         <div class="header">
-                            <h2><strong>Basic</strong> Information</h2>
+                            <h2><strong>Basic</strong> Information <small>Patient profile</small></h2>
                         </div>
                         <div class="body">
-                            <style>
-                                .required:after {
-                                    content: " *";
-                                    color: red;
-                                }
-                            </style>
                             <div class="row clearfix">
-                                <div class="col-sm-4">
+                                <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label class="required">Patient ID</label>
-                                        <input type="text" name="patientId" class="form-control" placeholder="Patient ID (e.g. CUST-001)" value="<?php echo htmlspecialchars($patientId); ?>" <?php echo $patientId ? 'readonly' : 'required'; ?>>
+                                        <input type="text" name="patientId" class="form-control" placeholder="Patient ID" value="<?php echo htmlspecialchars($patientId); ?>" <?php echo $patientId ? 'readonly' : 'required'; ?> style="background: #e9ecef;">
                                         <?php if($patientId) echo '<input type="hidden" name="editPatient" value="'.htmlspecialchars($patientId).'">'; ?>
                                     </div>
                                 </div>
-                                <div class="col-sm-4">
+                                <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label class="required">Full Name</label>
-                                        <input type="text" name="name" class="form-control" placeholder="Full Name" value="<?php echo htmlspecialchars($name); ?>" required>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="form-group">
-                                        <label class="required">Phone No</label>
-                                        <input type="text" name="phoneNo" class="form-control" placeholder="Phone No" value="<?php echo htmlspecialchars($phoneNo); ?>" required>
+                                        <input type="text" name="phoneNo" class="form-control" placeholder="Phone Number" value="<?php echo htmlspecialchars($phoneNo); ?>" required>
                                     </div>
                                 </div>
                             </div>
                             <div class="row clearfix">
-                                <div class="col-sm-3">
+                                <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label class="required">Email</label>
-                                        <input type="email" name="email" class="form-control" placeholder="Email" value="<?php echo htmlspecialchars($email); ?>" required>
+                                        <input type="email" name="email" class="form-control" placeholder="Email Address" value="<?php echo htmlspecialchars($email); ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-3">
                                     <div class="form-group">
-                                        <label class="required">Age</label>
                                         <input type="number" name="age" class="form-control" placeholder="Age" value="<?php echo htmlspecialchars($age); ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-3">
-                                    <label class="required">Gender</label>
                                     <select name="gender" class="form-control show-tick" required>
                                         <option value="">- Gender -</option>
                                         <option value="Male" <?php if($gender == 'Male') echo 'selected'; ?>>Male</option>
                                         <option value="Female" <?php if($gender == 'Female') echo 'selected'; ?>>Female</option>
                                     </select>
                                 </div>
-                                <div class="col-sm-3">
-                                    <label>Registration Date</label>
-                                    <input type="text" name="Date" class="form-control" value="<?php echo htmlspecialchars($date); ?>">
+                            </div>
+                            <div class="row clearfix">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <textarea name="medicalHistory" rows="4" class="form-control no-resize" placeholder="Patients' family history, lifestyle, and other medical conditions..."><?php echo htmlspecialchars($medicalHistory); ?></textarea>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div class="row clearfix m-t-20">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="header">
+                            <h2><strong>Registration</strong> Information <small>Associate Doctor to Patient...</small></h2>
+                        </div>
+                        <div class="body">
+                            <div class="row clearfix">
                                 <div class="col-sm-6">
-                                    <h6>Assign Doctor</h6>
                                     <select name="AssociatedDoctors[]" class="form-control show-tick" data-live-search="true">
-                                        <option value="">-- Unassigned --</option>
+                                        <option value="">-- Select Doctor --</option>
                                         <?php foreach($doctors_list as $doc): ?>
                                             <option value="<?php echo $doc['userID']; ?>" <?php echo ($assignedDoctorID == $doc['userID']) ? 'selected' : ''; ?>>
                                                 <?php echo htmlspecialchars($doc['full_name'] . " (" . $doc['specialization'] . ")"); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <p class="m-t-10"><small>Can't find a doctor? <a href="add-doctor.php">Add a new doctor here</a>.</small></p>
                                 </div>
                                 <div class="col-sm-6">
-                                    <h6>Link IoT Device (MAC Address)</h6>
                                     <select name="mac_address" class="form-control show-tick" data-live-search="true">
-                                        <option value="">-- No Device --</option>
+                                        <option value="">-- Link IoT Device --</option>
                                         <?php foreach($available_devices as $dev): ?>
                                             <option value="<?php echo $dev['mac_address']; ?>" <?php echo ($linked_mac_address == $dev['mac_address']) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($dev['model'] . " [" . $dev['mac_address'] . "]"); ?>
+                                                <?php echo htmlspecialchars($dev['mac_address'] . " - " . $dev['model']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
                             </div>
-
                             <div class="row clearfix m-t-20">
-                                <div class="col-sm-12">
+                                <div class="col-sm-6">
                                     <div class="form-group">
-                                        <textarea name="medicalHistory" rows="4" class="form-control no-resize" placeholder="Medical History / Observations..."><?php echo htmlspecialchars($medicalHistory); ?></textarea>
+                                        <input type="text" name="name" class="form-control" placeholder="Patient Name (Real Name)" value="<?php echo htmlspecialchars($name); ?>" required>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="text" name="ward_no" class="form-control" placeholder="Ward# / Staff Name" value="<?php echo htmlspecialchars($wardNo); ?>">
                                     </div>
                                 </div>
                             </div>
-                            
                             <div class="row clearfix">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <input type="text" name="Date" class="form-control" value="<?php echo htmlspecialchars($date); ?>">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row clearfix m-t-20">
                                 <div class="col-sm-12">
-                                    <button type="submit" class="btn btn-primary btn-round">Submit Record</button>
-                                    <button type="reset" class="btn btn-default btn-round btn-simple">Cancel</button>
+                                    <button type="submit" class="btn btn-primary btn-round">Submit</button>
+                                    <a href="patients.php" class="btn btn-default btn-round btn-simple">Go back to patients list</a>
                                 </div>
                             </div>
                         </div>

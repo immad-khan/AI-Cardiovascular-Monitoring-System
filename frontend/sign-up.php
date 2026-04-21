@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->execute([$user, $email, $hashed_password, $accType]);
 
             // Auto-login: fetch the new user and set session
-            $stmt2 = $conn->prepare('SELECT "userID", username, role FROM users WHERE username = ?');
+            $stmt2 = $conn->prepare('SELECT "userID", username, email, role FROM users WHERE username = ?');
             $stmt2->execute([$user]);
             $newUser = $stmt2->fetch(PDO::FETCH_ASSOC);
 
@@ -32,6 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_id']   = $newUser['userID'];
                 $_SESSION['username']  = $newUser['username'];
                 $_SESSION['user_type'] = $newUser['role'];
+                $_SESSION['email']     = $newUser['email'];
 
                 // Role-based redirect after signup
                 if ($newUser['role'] === 'patient') {

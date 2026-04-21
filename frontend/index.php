@@ -41,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_id'] = $row['userID'];
                 $_SESSION['username'] = $row['username'];
                 $_SESSION['user_type'] = $row['role'];
+                $_SESSION['email'] = $row['email'];
 
                 if ($row['role'] === 'admin') {
                     header("Location: dashboard.php");
