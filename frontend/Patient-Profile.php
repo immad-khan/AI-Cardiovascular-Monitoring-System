@@ -26,9 +26,14 @@ try {
     }
 
     // 2. Fetch AI Predictions
-    $ai_stmt = $conn->prepare("SELECT * FROM esp_ecg_predictions WHERE mac_address IN (SELECT mac_address FROM monitoring_devices WHERE \"patientID\" = ?) ORDER BY datetime DESC LIMIT 10");
-    $ai_stmt->execute([$patientId]);
-    $ai_history = $ai_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $ai_history = [];
+    try {
+        $ai_stmt = $conn->prepare("SELECT * FROM esp_ecg_predictions WHERE mac_address IN (SELECT mac_address FROM monitoring_devices WHERE \"patientID\" = ?) ORDER BY datetime DESC LIMIT 10");
+        $ai_stmt->execute([$patientId]);
+        $ai_history = $ai_stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // Table doesn't exist yet (planned for future phases)
+    }
 
     // 3. Fetch Vitals & ECG
     $vitals_query = "SELECT vr.*, md.mac_address 

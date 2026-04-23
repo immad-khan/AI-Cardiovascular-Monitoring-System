@@ -71,10 +71,8 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                     <div class="header">
                         <h2><strong>Patients</strong> List</h2>
                         <ul class="header-dropdown">
-                            <li class="dropdown"> <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i class="zmdi zmdi-more"></i> </a>
-                                <ul class="dropdown-menu dropdown-menu-right slideUp">
-                                    <li><a href="add-patient.php">Add New Patient</a></li>
-                                </ul>
+                            <li>
+                                <a href="add-patient.php" class="btn btn-primary btn-round btn-sm" style="color: white; margin-top: -5px;">+ Add Patient</a>
                             </li>
                         </ul>
                     </div>

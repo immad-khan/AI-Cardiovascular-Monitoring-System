@@ -146,12 +146,7 @@ try {
                     <div class="header">
                         <h2><strong>Recent</strong> My Patients <small>Latest admissions and updates</small></h2>
                         <ul class="header-dropdown">
-                            <li class="dropdown"> <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <i class="zmdi zmdi-more"></i> </a>
-                                <ul class="dropdown-menu dropdown-menu-right slideUp">
-                                    <li><a href="patients.php">View All Patients</a></li>
-                                    <li><a href="add-patient.php">Add New Patient</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="add-patient.php" class="btn btn-primary btn-sm btn-round text-white pt-2 pb-2">Add Patient</a></li>
                         </ul>
                     </div>
                     <div class="body table-responsive">
