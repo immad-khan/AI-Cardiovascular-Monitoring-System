@@ -36,24 +36,59 @@ try {
     }
     $deviceID = $device["deviceID"];
 
-    // Insert Vitals
+    // --- AI Inference Block ---
+    $ai_prediction = null;
+    $confidence = 0.0;
+    $inference_time = 0;
+    
+    if ($ecg_raw) {
+        $python_path = "python"; 
+        $script_path = "../Ai-Model/predict.py";
+        $command = "python $script_path " . escapeshellarg($ecg_raw);
+        $output = shell_exec($command);
+        $ai_result = json_decode($output, true);
+        if ($ai_result && isset($ai_result['success']) && $ai_result['success']) {
+            $ai_prediction = $ai_result['predictionClass'];
+            $confidence = $ai_result['confidenceScore'];
+            $inference_time = $ai_result['inference_time_ms'];
+            if (isset($ai_result['heartRate']) && $ai_result['heartRate'] > 0) {
+                $hr = $ai_result['heartRate'];
+            }
+        }
+    }
+
+     // Insert Vitals
     $stmt = $conn->prepare('INSERT INTO vital_sign_readings 
-        ("deviceID", "heartRate", "SpO2", "RespirationImpedance", device_type) 
-        VALUES (?, ?, ?, ?, ''Raspberry Pi 4'') RETURNING "readingID"');
-    $stmt->execute([$deviceID, $hr, $spo2, $resp]);
+        ("deviceID", "heartRate", "SpO2", "RespirationImpedance", device_type, final_prediction, "confidenceScore") 
+        VALUES (?, ?, ?, ?, \'Raspberry Pi 4\', ?, ?) RETURNING "readingID"');
+    $stmt->execute([$deviceID, $hr, $spo2, $resp, $ai_prediction, $confidence]);
     $reading = $stmt->fetch();
     $readingID = $reading["readingID"];
+
+    // Log AI Prediction
+    if ($ai_prediction) {
+        $stmt = $conn->prepare('INSERT INTO "AI_PREDICTION_LOG" ("readingID", "predictionClass", "confidenceScore", inference_time_ms) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$readingID, $ai_prediction, $confidence, $inference_time]);
+    }
 
     // Alerts
     if ($spo2 !== null && $spo2 < 90) {
         $msg = "CRITICAL: Low SpO2 detected ($spo2%) for device $mac";
-        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, ''Active'')');
+        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\')');
+        $stmt->execute([$deviceID, $msg]);
+        sendCriticalSMS("+92XXXXXXXXXX", $msg);
+    }
+    
+    // AI based Critical Alert
+    if ($ai_prediction && (strpos(strtolower($ai_prediction), 'ventricular') !== false || strpos(strtolower($ai_prediction), 'tachycardia') !== false)) {
+        $msg = "AI ALERT: Abnormal Heart Rhythm detected ($ai_prediction) for device $mac";
+        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\')');
         $stmt->execute([$deviceID, $msg]);
         sendCriticalSMS("+92XXXXXXXXXX", $msg);
     }
 
     $conn->commit();
-    echo json_encode(["success" => true, "readingID" => $readingID, "message" => "Data synced to Supabase."]);
+    echo json_encode(["success" => true, "readingID" => $readingID, "ai" => ["prediction" => $ai_prediction, "confidence" => $confidence, "hr" => $hr], "message" => "Data analyzed and synced."]);
 } catch (Exception $e) {
     if ($conn->inTransaction()) $conn->rollBack();
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
