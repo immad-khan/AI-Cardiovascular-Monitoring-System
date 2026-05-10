@@ -13,8 +13,10 @@ except ImportError:
 
 from ecg_preprocessor import preprocess_raw_ecg, FS
 
-# Configuration
-MODEL_PATH = "Ai-Model/ecg_model.tflite"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "ecg_model.tflite")
 CLASS_NAMES = {
     0: "Normal",
     1: "Supraventricular",

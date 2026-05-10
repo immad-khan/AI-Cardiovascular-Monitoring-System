@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "E:\\anaconda\\python.exe",
+    "python.analysis.extraPaths": [
+        "./Ai-Model"
+    ]
+}

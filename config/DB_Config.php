@@ -1,7 +1,7 @@
 <?php
 // Supabase (Postgres) Configuration
 // Workaround: Using IP direct because of DNS resolution issues (Unknown host)
-$host = "13.239.87.90"; // was "aws-1-ap-southeast-2.pooler.supabase.com"
+$host = "aws-1-ap-southeast-2.pooler.supabase.com"; // was "13.239.87.90"
 $port = "6543";
 $dbname = "postgres";
 $user = "postgres.jopkxezkpyfjixxtrfnw";

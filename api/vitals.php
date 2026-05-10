@@ -16,10 +16,10 @@ if (!isset($_POST["mac_address"])) {
 
 try {
     $mac = $_POST["mac_address"];
-    $hr = isset($_POST["heartRate"]) ? (int)$_POST["heartRate"] : null;
-    $spo2 = isset($_POST["SpO2"]) ? (float)$_POST["SpO2"] : null;
-    $temp = isset($_POST["Temperature"]) ? (float)$_POST["Temperature"] : null;
-    $resp = isset($_POST["RespirationRate"]) ? (int)$_POST["RespirationRate"] : null;
+    $hr = isset($_POST["heartRate"]) ? (int) $_POST["heartRate"] : null;
+    $spo2 = isset($_POST["SpO2"]) ? (float) $_POST["SpO2"] : null;
+    $temp = isset($_POST["Temperature"]) ? (float) $_POST["Temperature"] : null;
+    $resp = isset($_POST["RespirationRate"]) ? (int) $_POST["RespirationRate"] : null;
     $ecg_raw = isset($_POST["ECG_Raw"]) ? $_POST["ECG_Raw"] : null;
 
     $conn->beginTransaction();
@@ -28,9 +28,9 @@ try {
     $stmt = $conn->prepare('SELECT "deviceID" FROM monitoring_devices WHERE mac_address = ?');
     $stmt->execute([$mac]);
     $device = $stmt->fetch();
-    
+
     if (!$device) {
-        $stmt = $conn->prepare('INSERT INTO monitoring_devices (mac_address, status) VALUES (?, ''Online'') RETURNING "deviceID"');
+        $stmt = $conn->prepare('INSERT INTO monitoring_devices (mac_address, status) VALUES (?, "Online") RETURNING "deviceID"');
         $stmt->execute([$mac]);
         $device = $stmt->fetch();
     }
@@ -40,9 +40,9 @@ try {
     $ai_prediction = null;
     $confidence = 0.0;
     $inference_time = 0;
-    
+
     if ($ecg_raw) {
-        $python_path = "python"; 
+        $python_path = "python";
         $script_path = "../Ai-Model/predict.py";
         $command = "python $script_path " . escapeshellarg($ecg_raw);
         $output = shell_exec($command);
@@ -57,7 +57,7 @@ try {
         }
     }
 
-     // Insert Vitals
+    // Insert Vitals
     $stmt = $conn->prepare('INSERT INTO vital_sign_readings 
         ("deviceID", "heartRate", "SpO2", "RespirationImpedance", device_type, final_prediction, "confidenceScore") 
         VALUES (?, ?, ?, ?, \'Raspberry Pi 4\', ?, ?) RETURNING "readingID"');
@@ -78,7 +78,7 @@ try {
         $stmt->execute([$deviceID, $msg]);
         sendCriticalSMS("+92XXXXXXXXXX", $msg);
     }
-    
+
     // AI based Critical Alert
     if ($ai_prediction && (strpos(strtolower($ai_prediction), 'ventricular') !== false || strpos(strtolower($ai_prediction), 'tachycardia') !== false)) {
         $msg = "AI ALERT: Abnormal Heart Rhythm detected ($ai_prediction) for device $mac";
@@ -90,7 +90,8 @@ try {
     $conn->commit();
     echo json_encode(["success" => true, "readingID" => $readingID, "ai" => ["prediction" => $ai_prediction, "confidence" => $confidence, "hr" => $hr], "message" => "Data analyzed and synced."]);
 } catch (Exception $e) {
-    if ($conn->inTransaction()) $conn->rollBack();
+    if ($conn->inTransaction())
+        $conn->rollBack();
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
 }
 ?>
