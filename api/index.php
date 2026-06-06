@@ -8,11 +8,17 @@ if ($request_uri === '/' || $request_uri === '') {
 }
 
 if (file_exists($file_path) && is_file($file_path)) {
-    // Change directory so relative includes in the script work correctly
     chdir(dirname($file_path));
     require $file_path;
 } else {
-    http_response_code(404);
-    echo "404 Not Found";
+    // Fallback: Check if the file exists inside the frontend/ folder
+    $frontend_path = __DIR__ . '/../frontend' . $request_uri;
+    if (file_exists($frontend_path) && is_file($frontend_path)) {
+        chdir(dirname($frontend_path));
+        require $frontend_path;
+    } else {
+        http_response_code(404);
+        echo "404 Not Found";
+    }
 }
 ?>
