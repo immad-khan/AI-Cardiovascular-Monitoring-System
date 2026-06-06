@@ -3,9 +3,9 @@ FROM php:8.2-apache
 
 # Install system dependencies for Python, pip, and PostgreSQL (for Supabase)
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
     libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql
 
@@ -14,7 +14,7 @@ RUN a2enmod rewrite
 
 # Create a Python virtual environment to avoid PIP externally-managed-environment errors
 ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
+RUN python3.11 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy the requirements file and install Python dependencies
