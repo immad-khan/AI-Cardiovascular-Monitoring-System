@@ -3,6 +3,10 @@
     {
       "src": "api/index.php",
       "use": "vercel-php@0.9.0"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
