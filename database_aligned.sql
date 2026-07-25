@@ -118,3 +118,19 @@ CREATE TABLE IF NOT EXISTS `CRITICAL_ALERT` (
     `status` ENUM('Active', 'Acknowledged', 'Resolved') DEFAULT 'Active',
     FOREIGN KEY (`deviceID`) REFERENCES `monitoring_devices`(`deviceID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 10. DOCTOR_TASKS Table
+CREATE TABLE IF NOT EXISTS `doctor_tasks` (
+    `taskID` SERIAL PRIMARY KEY,
+    `doctorID` INT NOT NULL, -- FK to doctorProfile.userID
+    `patientID` VARCHAR(255) NOT NULL, -- FK to patients.patientID
+    `readingID` INT, -- FK to vital_sign_readings.readingID
+    `alertID` INT, -- FK to CRITICAL_ALERT.alertID
+    `task_type` VARCHAR(100) DEFAULT 'Review ECG',
+    `status` ENUM('Pending', 'Reviewed', 'Escalated') DEFAULT 'Pending',
+    `notes` TEXT,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`doctorID`) REFERENCES `users`(`userID`) ON DELETE CASCADE,
+    FOREIGN KEY (`patientID`) REFERENCES `patients`(`patientID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

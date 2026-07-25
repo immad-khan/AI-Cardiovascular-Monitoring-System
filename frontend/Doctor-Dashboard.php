@@ -49,6 +49,17 @@ try {
     $recent_stmt->execute([$userID]);
     $recent_patients = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // 5. Fetch Pending Tasks
+    $tasks_stmt = $conn->prepare("
+        SELECT dt.*, p.name as patient_name
+        FROM doctor_tasks dt
+        JOIN patients p ON dt.\"patientID\" = p.\"patientID\"
+        WHERE dt.\"doctorID\" = ? AND dt.status = 'Pending'
+        ORDER BY dt.created_at DESC LIMIT 5
+    ");
+    $tasks_stmt->execute([$userID]);
+    $pending_tasks = $tasks_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     // Silently handle for now or show error
     $error_msg = "Error: " . $e->getMessage();
@@ -141,10 +152,45 @@ try {
         </div>
 
         <div class="row clearfix">
-            <div class="col-lg-12">
+            <!-- Pending Tasks Section -->
+            <div class="col-lg-6 col-md-12">
                 <div class="card">
                     <div class="header">
-                        <h2><strong>Recent</strong> My Patients <small>Latest admissions and updates</small></h2>
+                        <h2><strong>Pending</strong> Tasks <small>Requires your attention</small></h2>
+                    </div>
+                    <div class="body table-responsive">
+                        <table class="table m-b-0 table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Task Type</th>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($pending_tasks as $task): ?>
+                                    <tr>
+                                        <td><strong><?php echo htmlspecialchars($task['patient_name']); ?></strong><br><small class="text-muted"><?php echo $task['patientID']; ?></small></td>
+                                        <td><span class="badge badge-warning"><?php echo htmlspecialchars($task['task_type']); ?></span></td>
+                                        <td><?php echo date('H:i, M d', strtotime($task['created_at'])); ?></td>
+                                        <td>
+                                            <a href="Patient-Profile.php?patientId=<?php echo urlencode($task['patientID']); ?>&taskId=<?php echo $task['taskID']; ?>" class="btn btn-sm btn-primary btn-round">Review</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <?php if(empty($pending_tasks)) echo "<tr><td colspan='4' class='text-center text-success'>No pending tasks. Great job!</td></tr>"; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Patients Section -->
+            <div class="col-lg-6 col-md-12">
+                <div class="card">
+                    <div class="header">
+                        <h2><strong>Recent</strong> My Patients <small>Latest admissions</small></h2>
                         <ul class="header-dropdown">
                             <li><a href="add-patient.php" class="btn btn-primary btn-sm btn-round text-white pt-2 pb-2">Add Patient</a></li>
                         </ul>
@@ -153,28 +199,22 @@ try {
                         <table class="table m-b-0 table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Name</th>
-                                    <th>Model</th>
-                                    <th>MAC Address</th>
-                                    <th>Status</th>
+                                    <th>Device</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach($recent_patients as $p): ?>
                                     <tr>
-                                        <td><?php echo $p['patientID']; ?></td>
-                                        <td><?php echo $p['name']; ?></td>
-                                        <td><?php echo $p['model'] ?? 'N/A'; ?></td>
-                                        <td><span class="text-muted"><?php echo $p['mac_address'] ?? 'N/A'; ?></span></td>
-                                        <td><span class="badge badge-<?php echo ($p['isActive']) ? 'success' : 'danger'; ?>"><?php echo ($p['isActive']) ? 'Active' : 'Archived'; ?></span></td>
+                                        <td><strong><?php echo htmlspecialchars($p['name']); ?></strong><br><small class="text-muted"><?php echo $p['patientID']; ?></small></td>
+                                        <td><span class="text-muted"><?php echo $p['mac_address'] ?? 'Unassigned'; ?></span></td>
                                         <td>
-                                            <a href="Patient-Profile.php?patientId=<?php echo $p['patientID']; ?>" class="btn btn-sm btn-info btn-round">View Profile</a>
+                                            <a href="Patient-Profile.php?patientId=<?php echo urlencode($p['patientID']); ?>" class="btn btn-sm btn-info btn-round">View</a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                                <?php if(empty($recent_patients)) echo "<tr><td colspan='6' class='text-center'>No patients assigned yet.</td></tr>"; ?>
+                                <?php if(empty($recent_patients)) echo "<tr><td colspan='3' class='text-center'>No patients assigned yet.</td></tr>"; ?>
                             </tbody>
                         </table>
                     </div>

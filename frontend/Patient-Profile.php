@@ -60,6 +60,18 @@ try {
         $samples = $stmt_ecg->fetchAll(PDO::FETCH_COLUMN);
         $ecgJsonArray[] = json_encode(array_map("floatval", $samples));
     }
+    // 4. Fetch tasks for this patient (doctors only)
+    $patient_tasks = [];
+    if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'doctor') {
+        $task_stmt = $conn->prepare("
+            SELECT dt.\"taskID\", dt.task_type, dt.status, dt.created_at, dt.notes
+            FROM doctor_tasks dt
+            WHERE dt.\"patientID\" = ? AND dt.\"doctorID\" = ?
+            ORDER BY dt.created_at DESC LIMIT 10
+        ");
+        $task_stmt->execute([$patientId, $_SESSION['user_id']]);
+        $patient_tasks = $task_stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (PDOException $e) {
     die("Database Error: " . $e->getMessage());
 }
@@ -152,9 +164,81 @@ try {
                 </div>
             </div>
         </div>
+
+        <!-- Task Panel: only visible to doctors when tasks exist -->
+        <?php if ($_SESSION['user_type'] === 'doctor' && !empty($patient_tasks)): ?>
+        <div class="row clearfix" id="pending-tasks">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="header bg-red">
+                        <h2 style="color:#fff;"><i class="zmdi zmdi-assignment m-r-10"></i><strong>Clinical Tasks</strong> Requiring Review <small style="color:rgba(255,255,255,0.7);">For <?php echo htmlspecialchars($patientData['name']); ?></small></h2>
+                    </div>
+                    <div class="body">
+                        <div class="row">
+                            <?php foreach($patient_tasks as $task): ?>
+                            <div class="col-lg-4 col-md-6" id="task-card-<?php echo $task['taskID']; ?>">
+                                <div class="card" style="border-left: 4px solid <?php echo $task['status'] === 'Pending' ? '#f44336' : ($task['status'] === 'Escalated' ? '#FF9800' : '#4CAF50'); ?>;">
+                                    <div class="body">
+                                        <span class="badge badge-<?php echo $task['status'] === 'Pending' ? 'danger' : ($task['status'] === 'Escalated' ? 'warning' : 'success'); ?> m-b-10"><?php echo $task['status']; ?></span>
+                                        <h5 class="m-b-5"><?php echo htmlspecialchars($task['task_type']); ?></h5>
+                                        <small class="text-muted"><?php echo date('M d, Y H:i', strtotime($task['created_at'])); ?></small>
+                                        <?php if($task['notes']): ?>
+                                            <p class="m-t-10 text-muted"><em><?php echo htmlspecialchars($task['notes']); ?></em></p>
+                                        <?php endif; ?>
+                                        <?php if($task['status'] === 'Pending'): ?>
+                                        <div class="m-t-15">
+                                            <textarea class="form-control m-b-10" placeholder="Add clinical notes (optional)..." id="notes-<?php echo $task['taskID']; ?>"></textarea>
+                                            <button class="btn btn-success btn-sm btn-round" onclick="resolveTask(<?php echo $task['taskID']; ?>, 'Reviewed')"><i class="zmdi zmdi-check"></i> Mark Reviewed</button>
+                                            <button class="btn btn-warning btn-sm btn-round m-l-5" onclick="resolveTask(<?php echo $task['taskID']; ?>, 'Escalated')"><i class="zmdi zmdi-flag"></i> Escalate</button>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
     </div>
 </section>
 <script src="../assets/bundles/libscripts.bundle.js"></script>
+<script>
+function resolveTask(taskID, status) {
+    var notes = document.getElementById('notes-' + taskID);
+    var notesVal = notes ? notes.value : '';
+    
+    var formData = new FormData();
+    formData.append('taskID', taskID);
+    formData.append('status', status);
+    formData.append('notes', notesVal);
+    
+    fetch('../api/tasks.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            var card = document.getElementById('task-card-' + taskID);
+            if (card) {
+                card.querySelector('.card').style.borderLeftColor = status === 'Reviewed' ? '#4CAF50' : '#FF9800';
+                card.querySelector('.badge').className = 'badge badge-' + (status === 'Reviewed' ? 'success' : 'warning') + ' m-b-10';
+                card.querySelector('.badge').textContent = status;
+                var actionDiv = card.querySelector('.m-t-15');
+                if (actionDiv) actionDiv.innerHTML = '<span class="text-success"><i class="zmdi zmdi-check-circle"></i> ' + status + ' - saved.</span>';
+            }
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(() => alert('Network error. Please try again.'));
+}
+</script>
 <script>
 $(function(){
     var spO2Points = [], hrPoints = [];

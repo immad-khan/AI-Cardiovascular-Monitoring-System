@@ -71,20 +71,38 @@ try {
         $stmt->execute([$readingID, $ai_prediction, $confidence, $inference_time]);
     }
 
+    // Helper logic to find patient/doctor for alerts
+    $patientInfo = null;
+    $infoStmt = $conn->prepare('SELECT p."patientID", p."assignedDoctorID" FROM monitoring_devices md JOIN patients p ON md."patientID" = p."patientID" WHERE md."deviceID" = ?');
+    $infoStmt->execute([$deviceID]);
+    $patientInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
+
     // Alerts
     if ($spo2 !== null && $spo2 < 90) {
         $msg = "CRITICAL: Low SpO2 detected ($spo2%) for device $mac";
-        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\')');
+        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\') RETURNING "alertID"');
         $stmt->execute([$deviceID, $msg]);
+        $alertRow = $stmt->fetch();
         sendCriticalSMS("+92XXXXXXXXXX", $msg);
+        
+        if ($alertRow && $patientInfo && $patientInfo['assignedDoctorID']) {
+            $taskStmt = $conn->prepare('INSERT INTO doctor_tasks ("doctorID", "patientID", "readingID", "alertID", "task_type") VALUES (?, ?, ?, ?, \'Review SpO2 Alert\')');
+            $taskStmt->execute([$patientInfo['assignedDoctorID'], $patientInfo['patientID'], $readingID, $alertRow['alertID']]);
+        }
     }
 
     // AI based Critical Alert
     if ($ai_prediction && (strpos(strtolower($ai_prediction), 'ventricular') !== false || strpos(strtolower($ai_prediction), 'tachycardia') !== false)) {
         $msg = "AI ALERT: Abnormal Heart Rhythm detected ($ai_prediction) for device $mac";
-        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\')');
+        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\') RETURNING "alertID"');
         $stmt->execute([$deviceID, $msg]);
+        $alertRow = $stmt->fetch();
         sendCriticalSMS("+92XXXXXXXXXX", $msg);
+        
+        if ($alertRow && $patientInfo && $patientInfo['assignedDoctorID']) {
+            $taskStmt = $conn->prepare('INSERT INTO doctor_tasks ("doctorID", "patientID", "readingID", "alertID", "task_type") VALUES (?, ?, ?, ?, \'Review ECG AI Alert\')');
+            $taskStmt->execute([$patientInfo['assignedDoctorID'], $patientInfo['patientID'], $readingID, $alertRow['alertID']]);
+        }
     }
 
     $conn->commit();
