@@ -21,7 +21,7 @@ import uuid
 import logging
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-AZURE_API_URL = "https://digihealth-api-123.azurewebsites.net/api/vitals.php"
+AZURE_API_URL = "https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/api/vitals.php"
 SERIAL_BAUD   = 115200
 SERIAL_PORT   = None  # Set to None for auto-detection, or e.g. "/dev/ttyUSB0"
 

@@ -3,9 +3,11 @@ import json
 import numpy as np
 import time
 try:
+    # pyrefly: ignore [missing-import]
     import tflite_runtime.interpreter as tflite
 except ImportError:
     try:
+        # pyrefly: ignore [missing-import]
         import tensorflow.lite as tflite
     except ImportError:
         print(json.dumps({"success": False, "message": "TFLite Runtime not found. Please install tflite-runtime or tensorflow."}))

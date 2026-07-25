@@ -30,7 +30,7 @@ try {
     $device = $stmt->fetch();
 
     if (!$device) {
-        $stmt = $conn->prepare('INSERT INTO monitoring_devices (mac_address, status) VALUES (?, "Online") RETURNING "deviceID"');
+        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status) VALUES (?, 'Online') RETURNING \"deviceID\"");
         $stmt->execute([$mac]);
         $device = $stmt->fetch();
     }
