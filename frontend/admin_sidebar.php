@@ -4,8 +4,8 @@
             <div class="user-info">
                 <div class="image"><a href="profile.html" class="waves-effect waves-block"><img src="../assets/images/admin.png" alt="User"></a></div>
                 <div class="detail">
-                    <h4>Super Administrator</h4>
-                    <small>Waqas</small>                        
+                    <h4>Administrator</h4>
+                    <small><?php echo $_SESSION['username'] ?? 'Admin'; ?></small>                        
                 </div>
             </div>
         </li>	
@@ -40,6 +40,9 @@
         </li>
         <li>
             <a href="Clinical-Predictions.php"><i class="zmdi zmdi-chart"></i><span>AI Predictions</span></a>
+        </li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'device-monitor.php') ? 'active open' : ''; ?>">
+            <a href="device-monitor.php"><i class="zmdi zmdi-cast-connected"></i><span>IoT Device Monitor</span></a>
         </li>
     </ul>
 </div>

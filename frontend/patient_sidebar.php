@@ -12,7 +12,9 @@
         <li class="header">MAIN</li>
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-Dashboard.php') ? 'active open' : ''; ?>">
             <a href="Patient-Dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a>
-        </li>            
-        <!-- More links will be added here step by step -->
+        </li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-Profile.php') ? 'active open' : ''; ?>">
+            <a href="Patient-Profile.php?patientId=<?php echo $_SESSION['username'] ?? ''; ?>"><i class="zmdi zmdi-favorite"></i><span>My Health Profile</span></a>
+        </li>
     </ul>
-</div>
+</div>

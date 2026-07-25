@@ -81,7 +81,7 @@ function handlePatientAction($conn, $postData) {
                 $subject = "Welcome to DigiHealth - Your Patient Portal Login";
                 $htmlMessage = "<h3>Welcome to DigiHealth, $name!</h3>
                                 <p>Your patient portal has been successfully created.</p>
-                                <p><strong>Login URL:</strong> <a href='https://your-digihealth-url.com'>DigiHealth Portal</a></p>
+                                <p><strong>Login URL:</strong> <a href='https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/frontend/index.php'>DigiHealth Portal</a></p>
                                 <p><strong>Username:</strong> $patient_id</p>
                                 <p><strong>Password:</strong> $temp_password</p>
                                 <p>Please login and change your password as soon as possible.</p>";

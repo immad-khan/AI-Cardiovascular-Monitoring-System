@@ -107,21 +107,21 @@ try {
                                 <tbody>
                                     <?php foreach($predictions as $p): ?>
                                     <tr>
-                                        <td>#<?php echo $p['prediction_id']; ?></td>
+                                        <td>#<?php echo $p['predictionID']; ?></td>
                                         <td><strong><?php echo htmlspecialchars($p['patient_name']); ?></strong></td>
                                         <td>
                                             <?php 
-                                            $class = (strpos(strtolower($p['prediction_class']), 'normal') !== false) ? 'badge-success' : 'badge-danger';
-                                            echo "<span class='badge $class'>".strtoupper($p['prediction_class'])."</span>";
+                                            $class = (strpos(strtolower($p['predictionClass']), 'normal') !== false) ? 'badge-success' : 'badge-danger';
+                                            echo "<span class='badge $class'>".strtoupper($p['predictionClass'])."</span>";
                                             ?>
                                         </td>
                                         <td>
-                                            <div class="progress m-b-5">
-                                                <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="<?php echo $p['confidence_score']*100; ?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo $p['confidence_score']*100; ?>%;">
-                                                    <span class="sr-only"><?php echo round($p['confidence_score']*100, 2); ?>%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="<?php echo $p['confidenceScore']*100; ?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo $p['confidenceScore']*100; ?>%;">
+                                                    <span class="sr-only"><?php echo round($p['confidenceScore']*100, 2); ?>%</span>
                                                 </div>
                                             </div>
-                                            <small><?php echo round($p['confidence_score']*100, 2); ?>%</small>
+                                            <small><?php echo round($p['confidenceScore']*100, 2); ?>%</small>
                                         </td>
                                         <td><?php echo htmlspecialchars($p['device_model']); ?></td>
                                         <td><?php echo date('M d, H:i', strtotime($p['reading_time'])); ?></td>

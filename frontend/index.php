@@ -95,13 +95,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <span class="navbar-toggler-bar bar3"></span>
             </button>
         </div>
-        <div class="navbar-collapse">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link btn btn-white btn-round" href="sign-up.php">SIGN UP</a>
-                </li>
-            </ul>
-        </div>
     </div>
 </nav>
 <!-- End Navbar -->
@@ -145,7 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div class="footer text-center">
                         <button type="submit" class="btn btn-primary btn-round btn-lg btn-block waves-effect waves-light">SIGN IN</button>
-                        <h5><a class="link" href="sign-up.php">Don't have an account? Sign Up</a></h5>
+                        <h5><small class="text-muted">Contact your administrator for portal access</small></h5>
                     </div>
                 </form>
             </div>
