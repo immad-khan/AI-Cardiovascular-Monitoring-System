@@ -48,7 +48,7 @@ function handleLogin($conn, $postData) {
                     $stmt_patient->execute([$row['email']]);
                     $res_patient = $stmt_patient->fetch(PDO::FETCH_ASSOC);
                     if ($res_patient) {
-                        return ["redirect" => "Patient-Profile.php?patientId=" . $res_patient['patientID']];
+                        return ["redirect" => "Patient-Dashboard.php"];
                     }
                     return ["redirect" => "index.php"];
                 case 'tech-admin':
