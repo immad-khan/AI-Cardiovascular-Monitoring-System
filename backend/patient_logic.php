@@ -75,7 +75,19 @@ function handlePatientAction($conn, $postData) {
                 $user_sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'patient')";
                 $user_stmt = $conn->prepare($user_sql);
                 $user_stmt->execute([$patient_id, $email, $hashed_password]);
-                $msg = "Patient created! Portal Login - Username: $patient_id, Password: $temp_password";
+                
+                // Send Welcome Email
+                include_once(__DIR__ . "/../backend/notification_service.php");
+                $subject = "Welcome to DigiHealth - Your Patient Portal Login";
+                $htmlMessage = "<h3>Welcome to DigiHealth, $name!</h3>
+                                <p>Your patient portal has been successfully created.</p>
+                                <p><strong>Login URL:</strong> <a href='https://your-digihealth-url.com'>DigiHealth Portal</a></p>
+                                <p><strong>Username:</strong> $patient_id</p>
+                                <p><strong>Password:</strong> $temp_password</p>
+                                <p>Please login and change your password as soon as possible.</p>";
+                sendEmail($email, $subject, $htmlMessage);
+                
+                $msg = "Patient created & email sent! Portal Login - Username: $patient_id, Password: $temp_password";
             } else {
                 $msg = "Patient record created successfully (User account already existed).";
             }
