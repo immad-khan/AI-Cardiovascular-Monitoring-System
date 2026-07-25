@@ -52,7 +52,7 @@ try {
             $confidence = $ai_result['confidenceScore'];
             $inference_time = $ai_result['inference_time_ms'];
             if (isset($ai_result['heartRate']) && $ai_result['heartRate'] > 0) {
-                $hr = $ai_result['heartRate'];
+                $hr = (int) round($ai_result['heartRate']); // Cast float BPM to int for DB
             }
         }
     }

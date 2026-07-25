@@ -127,6 +127,11 @@ def main():
                 # Parse the ECG JSON from ESP32
                 if line.startswith('{"ecg":'):
                     try:
+                        # Guard against truncated serial lines (missing closing brace)
+                        if not line.endswith('}'):
+                            log.warning(f"Truncated serial packet received ({len(line)} chars). Skipping.")
+                            continue
+
                         data = json.loads(line)
                         ecg_string = data.get("ecg", "")
 
