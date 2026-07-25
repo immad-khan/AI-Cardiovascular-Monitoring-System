@@ -14,7 +14,7 @@ if (isset($_SESSION["user_type"])) {
         header("Location: sign-up.php?status=Invalid Role&type=error");
     }
 } else {
-    header("Location: sign-up.php");
+    header("Location: index.php");
 }
 exit();
 ?>

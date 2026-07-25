@@ -73,7 +73,7 @@ try {
 
     // Helper logic to find patient/doctor for alerts
     $patientInfo = null;
-    $infoStmt = $conn->prepare('SELECT p."patientID", p."assignedDoctorID" FROM monitoring_devices md JOIN patients p ON md."patientID" = p."patientID" WHERE md."deviceID" = ?');
+    $infoStmt = $conn->prepare('SELECT p."patientID", p."assignedDoctorID", u.email as doctor_email FROM monitoring_devices md JOIN patients p ON md."patientID" = p."patientID" LEFT JOIN users u ON p."assignedDoctorID" = u."userID" WHERE md."deviceID" = ?');
     $infoStmt->execute([$deviceID]);
     $patientInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -83,7 +83,9 @@ try {
         $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\') RETURNING "alertID"');
         $stmt->execute([$deviceID, $msg]);
         $alertRow = $stmt->fetch();
-        sendCriticalSMS("+92XXXXXXXXXX", $msg);
+        if ($patientInfo && !empty($patientInfo['doctor_email'])) {
+            sendEmail($patientInfo['doctor_email'], "CRITICAL Vitals Alert", "<p>$msg</p>");
+        }
         
         if ($alertRow && $patientInfo && $patientInfo['assignedDoctorID']) {
             $taskStmt = $conn->prepare('INSERT INTO doctor_tasks ("doctorID", "patientID", "readingID", "alertID", "task_type") VALUES (?, ?, ?, ?, \'Review SpO2 Alert\')');
@@ -97,7 +99,9 @@ try {
         $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\') RETURNING "alertID"');
         $stmt->execute([$deviceID, $msg]);
         $alertRow = $stmt->fetch();
-        sendCriticalSMS("+92XXXXXXXXXX", $msg);
+        if ($patientInfo && !empty($patientInfo['doctor_email'])) {
+            sendEmail($patientInfo['doctor_email'], "AI Prediction Alert", "<p>$msg</p>");
+        }
         
         if ($alertRow && $patientInfo && $patientInfo['assignedDoctorID']) {
             $taskStmt = $conn->prepare('INSERT INTO doctor_tasks ("doctorID", "patientID", "readingID", "alertID", "task_type") VALUES (?, ?, ?, ?, \'Review ECG AI Alert\')');

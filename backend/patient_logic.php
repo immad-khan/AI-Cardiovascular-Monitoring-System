@@ -94,16 +94,17 @@ function handlePatientAction($conn, $postData) {
         }
 
         if ($assignedDoctorID) {
-            $doc_stmt = $conn->prepare("SELECT phone_number, full_name FROM \"doctorProfile\" WHERE \"userID\" = ?");
+            $doc_stmt = $conn->prepare('SELECT dp.full_name, u.email FROM "doctorProfile" dp JOIN users u ON dp."userID" = u."userID" WHERE dp."userID" = ?');
             $doc_stmt->execute([$assignedDoctorID]);
             $docInfo = $doc_stmt->fetch(PDO::FETCH_ASSOC);
-            if ($docInfo && !empty($docInfo['phone_number'])) {
+            if ($docInfo && !empty($docInfo['email'])) {
                 include_once(__DIR__ . "/../backend/notification_service.php");
-                $docPhone = $docInfo['phone_number'];
+                $docEmail = $docInfo['email'];
                 $docName = $docInfo['full_name'];
-                $msg_body = "Dr. $docName, new patient assigned to you: $name ($patient_id). Please review their profile on DigiHealth.";
-                sendCriticalSMS($docPhone, $msg_body);
-                $msg .= " Doctor notified.";
+                $subject = "New Patient Assigned";
+                $htmlMessage = "<p>Dr. $docName, a new patient has been assigned to you: <strong>$name ($patient_id)</strong>.</p><p>Please review their profile on DigiHealth.</p>";
+                sendEmail($docEmail, $subject, $htmlMessage);
+                $msg .= " Doctor notified via email.";
             }
         }
         
