@@ -12,7 +12,13 @@ $userID = $_SESSION["user_id"];
 
 try {
     // 1. Fetch Patient ID linked to this User Account
-    $stmt = $conn->prepare("SELECT \"patientID\", name, age, gender, medical_history FROM patients WHERE email = ? LIMIT 1");
+    $stmt = $conn->prepare("
+        SELECT p.\"patientID\", p.name, p.age, p.gender, p.medical_history,
+               dp.full_name as doctor_name, dp.specialization as doctor_spec, dp.phone_number as doctor_phone
+        FROM patients p
+        LEFT JOIN \"doctorProfile\" dp ON p.\"assignedDoctorID\" = dp.\"userID\"
+        WHERE p.email = ? LIMIT 1
+    ");
     // Using email mapping which is consistent across users and patients tables
     $stmt->execute([$_SESSION["email"]]);
     $patientData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -153,6 +159,15 @@ try {
                     <div class="body">
                         <p><strong>Primary Concern:</strong> Cardiovascular Monitoring</p>
                         <p><strong>History:</strong> <?php echo nl2br(htmlspecialchars($patientData['medical_history'])); ?></p>
+                        <hr>
+                        <h4>My Assigned Doctor</h4>
+                        <?php if(!empty($patientData['doctor_name'])): ?>
+                            <p><strong>Name:</strong> Dr. <?php echo htmlspecialchars($patientData['doctor_name']); ?></p>
+                            <p><strong>Specialization:</strong> <?php echo htmlspecialchars($patientData['doctor_spec']); ?></p>
+                            <p><strong>Contact:</strong> <?php echo htmlspecialchars($patientData['doctor_phone']); ?></p>
+                        <?php else: ?>
+                            <p class="text-warning">No doctor assigned yet. Please contact the administration.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

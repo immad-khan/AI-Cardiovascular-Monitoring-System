@@ -152,10 +152,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </span>
                         </div>
                         <div class="input-group">
-                            <select type="text" class="form-control" name="accType" required>
+							<select type="text" class="form-control" name="accType" required>
 								<option value="" style="color:black;">- Account Type -</option>
 								<option value="doctor" style="color:black;">Doctor</option>
-								<option value="patient" style="color:black;">Patient</option>
 							</select>
                             <span class="input-group-addon">
                                 <i class="zmdi zmdi-account"></i>

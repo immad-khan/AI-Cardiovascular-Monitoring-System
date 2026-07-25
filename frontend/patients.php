@@ -65,6 +65,11 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
         </div>
     </div>
     <div class="container-fluid">
+        <?php if(isset($_GET['status'])): ?>
+            <div class="alert alert-<?php echo (isset($_GET['type']) && $_GET['type'] == 'error') ? 'danger' : 'success'; ?>">
+                <?php echo htmlspecialchars($_GET['status']); ?>
+            </div>
+        <?php endif; ?>
         <div class="row clearfix">
             <div class="col-md-12">
                 <div class="card patients-list">

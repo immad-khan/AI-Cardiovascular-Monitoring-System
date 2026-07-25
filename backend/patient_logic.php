@@ -62,9 +62,39 @@ function handlePatientAction($conn, $postData) {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$patient_id, $name, $phone_no, $email, $age, $gender, $medical_history, $assignedDoctorID, $staff_name, $ward_no, $date]);
-            $msg = "Patient record created successfully!";
+            
+            // Auto-create User account for patient portal access
+            $temp_password = "Patient@" . rand(1000, 9999);
+            $hashed_password = password_hash($temp_password, PASSWORD_DEFAULT);
+            
+            // Check if user already exists
+            $user_check = $conn->prepare("SELECT \"userID\" FROM users WHERE email = ?");
+            $user_check->execute([$email]);
+            if (!$user_check->fetch()) {
+                // We use patient_id as username for uniqueness
+                $user_sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'patient')";
+                $user_stmt = $conn->prepare($user_sql);
+                $user_stmt->execute([$patient_id, $email, $hashed_password]);
+                $msg = "Patient created! Portal Login - Username: $patient_id, Password: $temp_password";
+            } else {
+                $msg = "Patient record created successfully (User account already existed).";
+            }
         }
 
+        if ($assignedDoctorID) {
+            $doc_stmt = $conn->prepare("SELECT phone_number, full_name FROM \"doctorProfile\" WHERE \"userID\" = ?");
+            $doc_stmt->execute([$assignedDoctorID]);
+            $docInfo = $doc_stmt->fetch(PDO::FETCH_ASSOC);
+            if ($docInfo && !empty($docInfo['phone_number'])) {
+                include_once(__DIR__ . "/../backend/notification_service.php");
+                $docPhone = $docInfo['phone_number'];
+                $docName = $docInfo['full_name'];
+                $msg_body = "Dr. $docName, new patient assigned to you: $name ($patient_id). Please review their profile on DigiHealth.";
+                sendCriticalSMS($docPhone, $msg_body);
+                $msg .= " Doctor notified.";
+            }
+        }
+        
         // Handle Device Linking
         if (!empty($mac_address)) {
             // Check if this specific link already exists and is active
