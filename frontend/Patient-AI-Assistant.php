@@ -104,20 +104,11 @@ try {
         .ai-sidebar-panel { display: none; }
         .ai-msg-row { max-width: 90%; }
     }
+    body.theme-cyan .content { margin-top: 0 !important; }
+    body.theme-cyan .sidebar { top: 0 !important; }
 </style>
 </head>
 <body class="theme-cyan">
-<!-- Overlay For Sidebars -->
-<div class="overlay"></div>
-<!-- Top Bar -->
-<nav class="navbar p-l-5 p-r-5">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a href="javascript:void(0);" class="navbar-brand"><img src="../assets/images/logo.svg" width="30" alt="CUST"> <span class="m-l-10">DigiHealth</span></a>
-        </div>
-        <?php include("top_nav.php"); ?>
-    </div>
-</nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>
@@ -127,8 +118,8 @@ try {
     <div class="ai-page-header">
         <i class="zmdi zmdi-robot ai-icon"></i>
         <div>
-            <h3>DigiHealth AI Assistant</h3>
-            <small>Ask me anything about your health data, vitals, ECG results, or cardiovascular wellness</small>
+            <h3>AI Health Assistant</h3>
+            <small>Powered by LLaMA 3.3 70B &mdash; Analyzes your ECG, vitals &amp; HRV data</small>
         </div>
     </div>
     <div class="ai-page-body">

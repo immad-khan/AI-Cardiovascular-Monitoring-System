@@ -97,20 +97,11 @@ if ($doctorId) {
     .chat-input-area button:disabled { background: #ccc; cursor: not-allowed; }
     .no-doctor { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #999; }
     .no-doctor i { font-size: 4rem; margin-bottom: 15px; color: #ccc; }
+    body.theme-cyan .content { margin-top: 0 !important; }
+    body.theme-cyan .sidebar { top: 0 !important; }
 </style>
 </head>
 <body class="theme-cyan">
-<!-- Overlay For Sidebars -->
-<div class="overlay"></div>
-<!-- Top Bar -->
-<nav class="navbar p-l-5 p-r-5">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a href="javascript:void(0);" class="navbar-brand"><img src="../assets/images/logo.svg" width="30" alt="CUST"> <span class="m-l-10">DigiHealth</span></a>
-        </div>
-        <?php include("top_nav.php"); ?>
-    </div>
-</nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>
@@ -128,7 +119,7 @@ if ($doctorId) {
         <img src="<?php echo htmlspecialchars($doctorPhoto); ?>" alt="Doctor">
         <div>
             <h4>Dr. <?php echo htmlspecialchars($doctorName); ?></h4>
-            <small>Your Assigned Doctor</small>
+            <small><?php echo !empty($doc['specialization']) ? htmlspecialchars($doc['specialization']) : 'Your Assigned Doctor'; ?></small>
         </div>
     </div>
     <div class="chat-body" id="chat-body">
