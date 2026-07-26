@@ -17,6 +17,15 @@ try {
     $patientName = $patient["name"];
 } catch (PDOException $e) { die("DB Error"); }
 
+// Get patient profile photo
+$patientPhoto = '../assets/images/profile_av.jpg';
+try {
+    $p_stmt = $conn->prepare("SELECT COALESCE(profile_picture, '../assets/images/profile_av.jpg') as photo FROM patients WHERE email = ?");
+    $p_stmt->execute([$_SESSION["email"]]);
+    $p_row = $p_stmt->fetch(PDO::FETCH_ASSOC);
+    if ($p_row) { $patientPhoto = $p_row['photo']; }
+} catch (PDOException $e) {}
+
 // Get assigned doctor info
 $doctorId = $patient["assignedDoctorID"];
 $doctorName = "Not Assigned";
@@ -45,8 +54,8 @@ if ($doctorId) {
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 <style>
-    body { overflow: hidden; height: 100vh; }
-    .chat-page { display: flex; flex-direction: column; height: calc(100vh - 56px); }
+    .content { padding: 0; margin: 0; height: calc(100vh - 56px); }
+    .chat-page { display: flex; flex-direction: column; height: 100%; }
     .chat-header {
         background: linear-gradient(135deg, #1565c0, #0d47a1);
         color: #fff; padding: 14px 25px; display: flex; align-items: center; gap: 15px; flex-shrink: 0;
@@ -54,13 +63,20 @@ if ($doctorId) {
     .chat-header img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; }
     .chat-header h4 { margin: 0; font-size: 1rem; }
     .chat-header small { opacity: 0.8; font-size: 12px; }
-    .chat-body { flex: 1; overflow-y: auto; padding: 20px 25px; background: #f0f2f5; display: flex; flex-direction: column; gap: 10px; }
-    .msg { max-width: 70%; padding: 10px 15px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
-    .msg.sent { align-self: flex-end; background: #1565c0; color: #fff; border-bottom-right-radius: 4px; }
-    .msg.received { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; }
-    .msg-time { font-size: 10px; margin-top: 3px; opacity: 0.7; }
-    .msg.sent .msg-time { text-align: right; color: rgba(255,255,255,0.7); }
-    .msg.received .msg-time { color: #999; }
+    .chat-body { flex: 1; overflow-y: auto; padding: 20px 25px; background: #f0f2f5; display: flex; flex-direction: column; gap: 6px; }
+    .msg-row { display: flex; align-items: flex-end; gap: 8px; max-width: 75%; }
+    .msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
+    .msg-row.received { align-self: flex-start; }
+    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+    .msg-row.sent .msg-bubble { background: #1565c0; color: #fff; border-bottom-right-radius: 4px; }
+    .msg-row.received .msg-bubble { background: #fff; color: #333; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; }
+    .msg-sender { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+    .msg-row.sent .msg-sender { color: rgba(255,255,255,0.8); text-align: right; }
+    .msg-row.received .msg-sender { color: #1565c0; }
+    .msg-time { font-size: 10px; margin-top: 3px; }
+    .msg-row.sent .msg-time { text-align: right; color: rgba(255,255,255,0.7); }
+    .msg-row.received .msg-time { color: #999; }
     .chat-date-divider { text-align: center; font-size: 11px; color: #999; margin: 10px 0; }
     .chat-date-divider span { background: #e0e0e0; padding: 3px 12px; border-radius: 10px; }
     .chat-input-area {
@@ -91,6 +107,7 @@ if ($doctorId) {
     <?php include("patient_sidebar.php") ?>
 </aside>
 
+<section class="content">
 <div class="chat-page">
     <?php if (!$doctorId): ?>
     <div class="no-doctor">
@@ -115,11 +132,16 @@ if ($doctorId) {
     </div>
     <?php endif; ?>
 </div>
+</section>
 
 <script src="../assets/bundles/libscripts.bundle.js"></script>
 <script>
-var patientId = '<?php echo htmlspecialchars($patientId); ?>';
-var doctorId = '<?php echo $doctorId; ?>';
+var patientId = <?php echo json_encode($patientId); ?>;
+var doctorId = <?php echo json_encode($doctorId); ?>;
+var doctorName = <?php echo json_encode($doctorName); ?>;
+var doctorPhoto = <?php echo json_encode($doctorPhoto); ?>;
+var patientName = <?php echo json_encode($patientName); ?>;
+var patientPhoto = <?php echo json_encode($patientPhoto); ?>;
 var lastMsgId = 0;
 var sending = false;
 
@@ -139,11 +161,16 @@ function loadMessages() {
                 }
                 var isSent = msg.sender_type === 'patient';
                 var time = new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                var avatar = isSent ? patientPhoto : doctorPhoto;
+                var name = isSent ? 'You' : 'Dr. ' + doctorName;
                 container.insertAdjacentHTML('beforeend',
-                    '<div class="msg ' + (isSent ? 'sent' : 'received') + '">' +
+                    '<div class="msg-row ' + (isSent ? 'sent' : 'received') + '">' +
+                    '<img src="' + avatar + '" class="msg-avatar" alt="">' +
+                    '<div class="msg-bubble">' +
+                    '<div class="msg-sender">' + escapeHtml(name) + '</div>' +
                     '<div>' + escapeHtml(msg.message) + '</div>' +
-                    '<div class="msg-time">' + time + (isSent ? (msg.is_read ? ' ✓✓' : ' ✓') : '') + '</div>' +
-                    '</div>'
+                    '<div class="msg-time">' + time + (isSent ? (msg.is_read ? ' \u2713\u2713' : ' \u2713') : '') + '</div>' +
+                    '</div></div>'
                 );
                 lastMsgId = Math.max(lastMsgId, parseInt(msg.id));
             });
@@ -168,7 +195,13 @@ function sendMessage() {
     var container = document.getElementById('chat-body');
     var time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     container.insertAdjacentHTML('beforeend',
-        '<div class="msg sent"><div>' + escapeHtml(msg) + '</div><div class="msg-time">' + time + ' ✓</div></div>'
+        '<div class="msg-row sent">' +
+        '<img src="' + patientPhoto + '" class="msg-avatar" alt="">' +
+        '<div class="msg-bubble">' +
+        '<div class="msg-sender">You</div>' +
+        '<div>' + escapeHtml(msg) + '</div>' +
+        '<div class="msg-time">' + time + ' \u2713</div>' +
+        '</div></div>'
     );
     container.scrollTop = container.scrollHeight;
 
@@ -203,7 +236,7 @@ function markAsRead() {
 
 function escapeHtml(text) {
     var div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = text || '';
     return div.innerHTML;
 }
 

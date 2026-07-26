@@ -28,8 +28,8 @@ try {
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 <style>
-    body { overflow: hidden; height: 100vh; }
-    .ai-page { display: flex; flex-direction: column; height: calc(100vh - 56px); margin-top: 0; }
+    .content { padding: 0; margin: 0; height: calc(100vh - 56px); }
+    .ai-page { display: flex; flex-direction: column; height: 100%; }
     .ai-page-header {
         background: linear-gradient(135deg, #00bcd4, #0097a7);
         color: #fff; padding: 18px 25px; display: flex; align-items: center; gap: 15px;
@@ -114,6 +114,7 @@ try {
     <?php include("patient_sidebar.php") ?>
 </aside>
 
+<section class="content">
 <div class="ai-page">
     <div class="ai-page-header">
         <i class="zmdi zmdi-robot ai-icon"></i>
@@ -172,6 +173,7 @@ try {
         </div>
     </div>
 </div>
+</section>
 
 <script src="../assets/bundles/libscripts.bundle.js"></script>
 <script>
