@@ -37,7 +37,19 @@ function handleDoctorRegistration($conn, $postData, $filesData, $sessionData) {
         $stmt_p->execute([$user_id, $full_name, $specialization, $phone_number, $profile_pic, $description, $website_url]);
 
         $conn->commit();
-        return ["status" => "Doctor added successfully", "type" => "success", "redirect" => "doctors.php"];
+
+        // Send Welcome Email to the new Doctor
+        include_once(__DIR__ . "/../backend/notification_service.php");
+        $subject = "Welcome to DigiHealth - Your Doctor Portal";
+        $htmlMessage = "<h3>Welcome to DigiHealth, Dr. $full_name!</h3>
+                        <p>Your clinical portal access has been provisioned by the administrator.</p>
+                        <p><strong>Login URL:</strong> <a href='https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/frontend/index.php'>DigiHealth Portal</a></p>
+                        <p><strong>Username:</strong> $username</p>
+                        <p><strong>Password:</strong> $password</p>
+                        <p>Please log in to start monitoring your assigned patients.</p>";
+        sendEmail($email, $subject, $htmlMessage);
+
+        return ["status" => "Doctor added & email sent successfully", "type" => "success", "redirect" => "doctors.php"];
     } catch (PDOException $e) {
         if ($conn->inTransaction()) $conn->rollBack();
         return ["status" => "Database Error: " . $e->getMessage(), "type" => "error", "redirect" => "add-doctor.php"];

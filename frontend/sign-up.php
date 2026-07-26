@@ -14,8 +14,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($user) || empty($email) || empty($pass) || empty($accType)) {
         header("Location: sign-up.php?status=All fields are required");
         exit();
-    } elseif ($accType === 'patient') {
-        header("Location: sign-up.php?status=Patient accounts are created by administrators&type=error");
+    } elseif ($accType === 'patient' || $accType === 'doctor') {
+        header("Location: sign-up.php?status=All accounts are securely provisioned by the Administrator&type=error");
         exit();
     } else {
         // Hash the password for security
