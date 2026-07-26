@@ -2,7 +2,22 @@
 // backend/groq_ai.php
 // Groq API helper for AI features
 
-define('GROQ_API_KEY', getenv('GROQ_API_KEY') ?: 'YOUR_API_KEY');
+// Load API key from environment or .env file
+$groq_key = getenv('GROQ_API_KEY');
+if (!$groq_key || $groq_key === 'YOUR_API_KEY') {
+    $envFile = __DIR__ . '/../.env';
+    if (file_exists($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, '#') === 0) continue;
+            if (strpos($line, 'GROQ_API_KEY=') === 0) {
+                $groq_key = trim(substr($line, strlen('GROQ_API_KEY=')));
+                break;
+            }
+        }
+    }
+}
+define('GROQ_API_KEY', $groq_key ?: 'YOUR_API_KEY');
 define('GROQ_MODEL', 'llama-3.3-70b-versatile');
 define('GROQ_API_URL', 'https://api.groq.com/openai/v1/chat/completions');
 
