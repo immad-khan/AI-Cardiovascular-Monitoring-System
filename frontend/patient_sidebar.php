@@ -16,20 +16,26 @@
                         } catch (Exception $e) {}
                     }
                     ?>
-                    <a href="Patient-Profile.php?patientId=<?php echo $_SESSION['username'] ?? ''; ?>" class="waves-effect waves-block"><img src="<?php echo $patient_avatar; ?>" alt="User"></a>
+                    <a href="Patient-MyProfile.php" class="waves-effect waves-block"><img src="<?php echo $patient_avatar; ?>" alt="User"></a>
                 </div>
                 <div class="detail">
                     <h4><?php echo $_SESSION['username'] ?? 'Patient'; ?></h4>
-                    <small>Patient Account</small>                        
+                    <small>Patient Account</small>
                 </div>
             </div>
-        </li>	
+        </li>
         <li class="header">MAIN</li>
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-Dashboard.php') ? 'active open' : ''; ?>">
             <a href="Patient-Dashboard.php"><i class="zmdi zmdi-home"></i><span>Dashboard</span></a>
         </li>
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-Profile.php') ? 'active open' : ''; ?>">
-            <a href="Patient-Profile.php?patientId=<?php echo $_SESSION['username'] ?? ''; ?>"><i class="zmdi zmdi-favorite"></i><span>My Health Profile</span></a>
+            <a href="Patient-Profile.php?patientId=<?php echo $_SESSION['username'] ?? ''; ?>"><i class="zmdi zmdi-heart-pulse"></i><span>My Health Profile</span></a>
+        </li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-AI-Assistant.php') ? 'active open' : ''; ?>">
+            <a href="Patient-AI-Assistant.php"><i class="zmdi zmdi-robot"></i><span>AI Assistant</span></a>
+        </li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-MyProfile.php') ? 'active open' : ''; ?>">
+            <a href="Patient-MyProfile.php"><i class="zmdi zmdi-account-circle"></i><span>My Profile</span></a>
         </li>
     </ul>
-</div>
+</div>

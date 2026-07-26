@@ -25,14 +25,13 @@ try {
             p.\"patientID\",
             p.name as patient_name,
             vr.\"heartRate\",
-            vr.\"SpO2\",
             vr.final_prediction,
             vr.\"confidenceScore\",
             vr.timestamp as last_seen
         FROM monitoring_devices md
         LEFT JOIN patients p ON md.\"patientID\" = p.\"patientID\"
         LEFT JOIN LATERAL (
-            SELECT \"heartRate\", \"SpO2\", final_prediction, \"confidenceScore\", timestamp
+            SELECT \"heartRate\", final_prediction, \"confidenceScore\", timestamp
             FROM vital_sign_readings
             WHERE \"deviceID\" = md.\"deviceID\"
             ORDER BY timestamp DESC

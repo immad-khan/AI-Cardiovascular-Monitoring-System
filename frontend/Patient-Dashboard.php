@@ -1,8 +1,7 @@
-<?php 
+<?php
 include("../config/DB_Config.php");
 session_start();
 
-// Access Control: ONLY Patients can access this dashboard
 if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "patient") {
     header("Location: index.php?status=Unauthorized Access&type=error");
     exit();
@@ -11,7 +10,6 @@ if (!isset($_SESSION["user_type"]) || $_SESSION["user_type"] !== "patient") {
 $userID = $_SESSION["user_id"];
 
 try {
-    // 1. Fetch Patient ID linked to this User Account
     $stmt = $conn->prepare("
         SELECT p.\"patientID\", p.name, p.age, p.gender, p.medical_history,
                dp.full_name as doctor_name, dp.specialization as doctor_spec, dp.phone_number as doctor_phone
@@ -19,28 +17,21 @@ try {
         LEFT JOIN \"doctorProfile\" dp ON p.\"assignedDoctorID\" = dp.\"userID\"
         WHERE p.email = ? LIMIT 1
     ");
-    // Using email mapping which is consistent across users and patients tables
     $stmt->execute([$_SESSION["email"]]);
     $patientData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$patientData) {
-        die("<div class='container mt-5 alert alert-warning'>Patient profile not linked to this account. Contact Administrator.</div>");
-    }
-
+    if (!$patientData) { die("<div class='container mt-5 alert alert-warning'>Patient profile not linked. Contact Administrator.</div>"); }
     $patientId = $patientData["patientID"];
 
-    // 2. Fetch Latest Vitals
-    $vitals_query = "SELECT vr.*, md.model 
+    $vitals_query = "SELECT vr.*, md.model
                     FROM vital_sign_readings vr
                     JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
-                    WHERE md.\"patientID\" = ? 
+                    WHERE md.\"patientID\" = ?
                     ORDER BY vr.timestamp DESC LIMIT 15";
     $stmt = $conn->prepare($vitals_query);
     $stmt->execute([$patientId]);
     $readings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Fetch Recent Critical Alerts for this patient
-    $alert_query = "SELECT a.* FROM \"CRITICAL_ALERT\" a 
+    $alert_query = "SELECT a.* FROM \"CRITICAL_ALERT\" a
                    JOIN monitoring_devices md ON a.\"deviceID\" = md.\"deviceID\"
                    WHERE md.\"patientID\" = ? ORDER BY a.timestamp DESC LIMIT 5";
     $stmt = $conn->prepare($alert_query);
@@ -50,25 +41,37 @@ try {
 } catch (PDOException $e) {
     die("Data Connection Error: " . $e->getMessage());
 }
+
+$latest = $readings[0] ?? null;
 ?>
 <!doctype html>
-<html class="no-js " lang="en">
+<html class="no-js" lang="en">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-<title>My Health Dashboard - CUST Digihealth</title>
+<title>Dashboard - CUST Digihealth</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 <script src="../assets/js/canvasjs.min.js"></script>
+<style>
+    .dash-stat { text-align: center; padding: 20px 10px; border-radius: 10px; transition: transform 0.2s; }
+    .dash-stat:hover { transform: translateY(-3px); }
+    .dash-stat i { font-size: 2rem; margin-bottom: 8px; }
+    .dash-stat h3 { margin: 5px 0; font-size: 1.6rem; }
+    .dash-stat small { color: #888; }
+    .quick-link { text-decoration: none; }
+    .quick-link .card { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+    .quick-link .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+</style>
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a href="javascript:void(0);" class="navbar-brand"><img src="../assets/images/logo.svg" width="30" alt="CUST"> <span class="m-l-10">My Health Portal</span></a>
+            <a href="javascript:void(0);" class="navbar-brand"><img src="../assets/images/logo.svg" width="30" alt="CUST"> <span class="m-l-10">DigiHealth</span></a>
         </div>
         <ul class="nav navbar-nav navbar-right">
             <li><a href="logout.php" class="mega-menu" title="Sign Out"><i class="zmdi zmdi-power"></i></a></li>
@@ -85,40 +88,52 @@ try {
     <div class="block-header">
         <div class="row">
             <div class="col-lg-7 col-md-6 col-sm-12">
-                <h2>Health Overview <small>Welcome, <?php echo explode(' ', $patientData['name'])[0]; ?>!</small></h2>
+                <h2>Dashboard <small>Welcome, <?php echo explode(' ', $patientData['name'])[0]; ?>!</small></h2>
             </div>
         </div>
     </div>
     <div class="container-fluid">
+        <!-- Vitals Stat Cards -->
         <div class="row clearfix">
-            <div class="col-lg-6 col-md-6 col-sm-12">
-                <div class="card info-box-2 bg-blue">
-                    <div class="body">
-                        <div class="icon"><i class="zmdi zmdi-favorite"></i></div>
-                        <div class="content">
-                            <div class="text">LATEST HEART RATE</div>
-                            <div class="number"><?php echo $readings[0]['heartRate'] ?? '--'; ?> <small>BPM</small></div>
-                        </div>
-                    </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card dash-stat" style="background:linear-gradient(135deg,#e53935,#c62828);color:#fff;">
+                    <i class="zmdi zmdi-favorite"></i>
+                    <h3><?php echo $latest['heartRate'] ?? '--'; ?> <small style="color:rgba(255,255,255,0.8);">BPM</small></h3>
+                    <small style="color:rgba(255,255,255,0.7);">Heart Rate</small>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 col-sm-12">
-                <div class="card info-box-2 bg-red">
-                    <div class="body">
-                        <div class="icon"><i class="zmdi zmdi-alert-triangle"></i></div>
-                        <div class="content">
-                            <div class="text">HEALTH STATUS</div>
-                            <div class="number"><?php echo (count($alerts) > 0) ? 'Attention Needed' : 'Normal'; ?></div>
-                        </div>
-                    </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card dash-stat" style="background:linear-gradient(135deg,#43a047,#2e7d32);color:#fff;">
+                    <i class="zmdi zmdi-brightness-low"></i>
+                    <h3><?php echo $latest['SpO2'] ?? '--'; ?><small style="color:rgba(255,255,255,0.8);">%</small></h3>
+                    <small style="color:rgba(255,255,255,0.7);">SpO2 Level</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="card dash-stat" style="background:linear-gradient(135deg,#1e88e5,#1565c0);color:#fff;">
+                    <i class="zmdi zmdi-chart-line"></i>
+                    <h3><?php echo $latest['hrv_sdnn'] !== null ? round($latest['hrv_sdnn'],0) : '--'; ?> <small style="color:rgba(255,255,255,0.8);">ms</small></h3>
+                    <small style="color:rgba(255,255,255,0.7);">HRV (SDNN)</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <?php
+                $status_color = empty($alerts) ? '#43a047' : '#e53935';
+                $status_text = empty($alerts) ? 'Normal' : count($alerts) . ' Alert(s)';
+                ?>
+                <div class="card dash-stat" style="background:linear-gradient(135deg,<?php echo $status_color; ?>,<?php echo $status_color; ?>dd);color:#fff;">
+                    <i class="zmdi zmdi-shield-check"></i>
+                    <h3 style="font-size:1.1rem;"><?php echo $status_text; ?></h3>
+                    <small style="color:rgba(255,255,255,0.7);">Health Status</small>
                 </div>
             </div>
         </div>
 
+        <!-- Chart + Alerts -->
         <div class="row clearfix">
             <div class="col-lg-8 col-md-12">
                 <div class="card">
-                    <div class="header"><h2>Heart Rate Trend (%)</h2></div>
+                    <div class="header"><h2><strong>Heart Rate</strong> Trend</h2></div>
                     <div class="body">
                         <div id="hrTrendChart" style="height: 250px; width: 100%;"></div>
                     </div>
@@ -126,37 +141,67 @@ try {
             </div>
             <div class="col-lg-4 col-md-12">
                 <div class="card">
-                    <div class="header"><h2>Recent Notifications</h2></div>
+                    <div class="header"><h2><strong>Recent</strong> Alerts</h2></div>
                     <div class="body">
                         <ul class="list-unstyled">
                             <?php foreach($alerts as $alert): ?>
                                 <li class="m-b-15">
                                     <small class="text-muted"><?php echo date('M d, H:i', strtotime($alert['timestamp'])); ?></small>
-                                    <p class="m-b-0 text-danger"><strong>Critical Alert:</strong> <?php echo $alert['message']; ?></p>
+                                    <p class="m-b-0 text-danger" style="font-size:13px;"><strong>Alert:</strong> <?php echo $alert['message']; ?></p>
                                 </li>
                             <?php endforeach; ?>
-                            <?php if(empty($alerts)) echo "<li>No recent alerts. Stay healthy!</li>"; ?>
+                            <?php if(empty($alerts)) echo "<li class='text-muted'>No recent alerts. Stay healthy!</li>"; ?>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Quick Links -->
         <div class="row clearfix">
-            <div class="col-sm-12">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="Patient-MyProfile.php" class="quick-link">
+                    <div class="card">
+                        <div class="body text-center" style="padding:25px;">
+                            <i class="zmdi zmdi-account-circle" style="font-size:2.5rem;color:#00bcd4;"></i>
+                            <h5 class="m-t-10">My Profile</h5>
+                            <p class="text-muted" style="font-size:12px;">Personal info & vitals snapshot</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="Patient-Profile.php?patientId=<?php echo urlencode($patientId); ?>" class="quick-link">
+                    <div class="card">
+                        <div class="body text-center" style="padding:25px;">
+                            <i class="zmdi zmdi-heart-pulse" style="font-size:2.5rem;color:#e53935;"></i>
+                            <h5 class="m-t-10">My Health Profile</h5>
+                            <p class="text-muted" style="font-size:12px;">ECG, vitals trends & AI summary</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="Patient-AI-Assistant.php" class="quick-link">
+                    <div class="card">
+                        <div class="body text-center" style="padding:25px;">
+                            <i class="zmdi zmdi-robot" style="font-size:2.5rem;color:#7b1fa2;"></i>
+                            <h5 class="m-t-10">AI Assistant</h5>
+                            <p class="text-muted" style="font-size:12px;">Chat with AI about your health</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card">
-                    <div class="header"><h2>My Medical Summary</h2></div>
-                    <div class="body">
-                        <p><strong>Primary Concern:</strong> Cardiovascular Monitoring</p>
-                        <p><strong>History:</strong> <?php echo nl2br(htmlspecialchars($patientData['medical_history'])); ?></p>
-                        <hr>
-                        <h4>My Assigned Doctor</h4>
+                    <div class="body text-center" style="padding:25px;">
+                        <i class="zmdi zmdi-account" style="font-size:2.5rem;color:#ff9800;"></i>
+                        <h5 class="m-t-10">My Doctor</h5>
                         <?php if(!empty($patientData['doctor_name'])): ?>
-                            <p><strong>Name:</strong> Dr. <?php echo htmlspecialchars($patientData['doctor_name']); ?></p>
-                            <p><strong>Specialization:</strong> <?php echo htmlspecialchars($patientData['doctor_spec']); ?></p>
-                            <p><strong>Contact:</strong> <?php echo htmlspecialchars($patientData['doctor_phone']); ?></p>
+                            <p class="text-muted" style="font-size:12px;">Dr. <?php echo htmlspecialchars($patientData['doctor_name']); ?></p>
+                            <small class="text-info"><?php echo htmlspecialchars($patientData['doctor_spec']); ?></small>
                         <?php else: ?>
-                            <p class="text-warning">No doctor assigned yet. Please contact the administration.</p>
+                            <p class="text-warning" style="font-size:12px;">No doctor assigned</p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -174,10 +219,10 @@ window.onload = function () {
         axisY: { title: "BPM", includeZero: false },
         data: [{
             type: "line",
-            lineColor: "#2196F3",
-            markerColor: "#2196F3",
+            lineColor: "#e53935",
+            markerColor: "#e53935",
             dataPoints: [
-                <?php 
+                <?php
                 $revReadings = array_reverse($readings);
                 foreach($revReadings as $r) {
                     echo "{ x: new Date('".$r['timestamp']."'), y: ".$r['heartRate']." },";
