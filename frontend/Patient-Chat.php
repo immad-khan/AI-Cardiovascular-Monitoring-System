@@ -100,6 +100,17 @@ if ($doctorId) {
 </style>
 </head>
 <body class="theme-cyan">
+<!-- Overlay For Sidebars -->
+<div class="overlay"></div>
+<!-- Top Bar -->
+<nav class="navbar p-l-5 p-r-5">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="javascript:void(0);" class="navbar-brand"><img src="../assets/images/logo.svg" width="30" alt="CUST"> <span class="m-l-10">DigiHealth</span></a>
+        </div>
+        <?php include("top_nav.php"); ?>
+    </div>
+</nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>
