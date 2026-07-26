@@ -164,6 +164,21 @@ function SignInView({ onBack }: { onBack: () => void }) {
         <div className="signin-mark"><Icon name="heart" size={26} /></div>
         <h1 id="signin-title">Sign In</h1>
         <p className="signin-intro">Personalized Portal for Admin, Doctor &amp; Patients</p>
+        
+        {(() => {
+          const params = new URLSearchParams(window.location.search);
+          const status = params.get('status');
+          const type = params.get('type') || 'error';
+          if (status) {
+            return (
+              <div className="form-notice" style={{ marginBottom: 20, textAlign: 'left', borderColor: type === 'error' ? '#e0533d' : 'var(--teal)' }}>
+                {status}
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         <form className="signin-form" action="../index.php" method="POST">
           <label className="signin-input">
             <input type="text" name="username" placeholder="User Name" required />
@@ -612,7 +627,7 @@ function Footer({ onSignIn }: { onSignIn: () => void }) {
 /* ─── APP ─── */
 export default function App() {
   const [view, setView] = useState<'landing' | 'signin'>(() => window.location.hash === '#signin' ? 'signin' : 'landing');
-  const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
+  const [isSubscribeOpen, setIsSubscribeOpen] = useState(() => window.location.hash === '#subscribe');
 
   function openSignIn(e?: { preventDefault: () => void }) {
     e?.preventDefault();
