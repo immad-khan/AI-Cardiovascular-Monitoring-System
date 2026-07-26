@@ -99,9 +99,6 @@ try {
                 </h2>
             </div>
             <div class="col-lg-5 col-md-7 col-sm-12 text-right">
-                <?php if ($_SESSION['user_type'] === 'patient'): ?>
-                <a href="Patient-MyProfile.php" class="btn btn-default btn-round"><i class="zmdi zmdi-account-circle m-r-5"></i>My Profile</a>
-                <?php endif; ?>
             </div>
         </div>
     </div>
