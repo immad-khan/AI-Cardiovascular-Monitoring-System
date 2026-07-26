@@ -181,7 +181,7 @@ function SignInView({ onBack }: { onBack: () => void }) {
 
         <form className="signin-form" action="../index.php" method="POST">
           <label className="signin-input">
-            <input type="text" name="username" placeholder="User Name" required />
+            <input type="text" name="username" placeholder="Email or Username" required />
             <span className="input-icon"><Icon name="user" size={18} /></span>
           </label>
           <label className="signin-input">

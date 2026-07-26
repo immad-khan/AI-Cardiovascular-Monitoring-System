@@ -27,8 +27,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     try {
-        $stmt = $conn->prepare('SELECT "userID", username, email, password, role, "isActive" FROM users WHERE username = ?');
-        $stmt->execute([$user]);
+        $stmt = $conn->prepare('SELECT "userID", username, email, password, role, "isActive" FROM users WHERE username = ? OR email = ?');
+        $stmt->execute([$user, $user]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
