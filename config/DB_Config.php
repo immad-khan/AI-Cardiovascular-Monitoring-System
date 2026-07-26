@@ -11,6 +11,7 @@ try {
     $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
     $conn = new PDO($dsn, $user, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
