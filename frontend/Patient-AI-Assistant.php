@@ -28,7 +28,7 @@ try {
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 <style>
-    .content { padding: 0; margin: 0; height: calc(100vh - 56px); }
+    .content { padding: 0; margin: 0; height: 100vh; }
     .ai-page { display: flex; flex-direction: column; height: 100%; }
     .ai-page-header {
         background: linear-gradient(135deg, #00bcd4, #0097a7);
@@ -107,9 +107,6 @@ try {
 </style>
 </head>
 <body class="theme-cyan">
-<nav class="navbar p-l-5 p-r-5">
-    <?php include("top_nav.php") ?>
-</nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>

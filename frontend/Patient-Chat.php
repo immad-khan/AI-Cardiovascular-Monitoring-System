@@ -54,7 +54,7 @@ if ($doctorId) {
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 <style>
-    .content { padding: 0; margin: 0; height: calc(100vh - 56px); }
+    .content { padding: 0; margin: 0; height: 100vh; }
     .chat-page { display: flex; flex-direction: column; height: 100%; }
     .chat-header {
         background: linear-gradient(135deg, #1565c0, #0d47a1);
@@ -100,9 +100,6 @@ if ($doctorId) {
 </style>
 </head>
 <body class="theme-cyan">
-<nav class="navbar p-l-5 p-r-5">
-    <?php include("top_nav.php") ?>
-</nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>

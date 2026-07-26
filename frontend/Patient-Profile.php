@@ -79,9 +79,6 @@ try {
 <script src="../assets/js/canvasjs.min.js"></script>
 </head>
 <body class="theme-cyan">
-<nav class="navbar p-l-5 p-r-5">
-    <?php include("top_nav.php") ?>
-</nav>
 <aside id="leftsidebar" class="sidebar">
     <?php
     if ($_SESSION['user_type'] === 'admin') include("admin_sidebar.php");

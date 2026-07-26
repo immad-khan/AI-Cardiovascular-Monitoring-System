@@ -1,5 +1,5 @@
-<div class="menu">
-    <ul class="list">
+<div class="menu" style="display:flex;flex-direction:column;height:100%;">
+    <ul class="list" style="display:flex;flex-direction:column;height:100%;padding-bottom:0;">
         <li>
             <div class="user-info">
                 <div class="image">
@@ -39,6 +39,9 @@
         </li>
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-MyProfile.php') ? 'active open' : ''; ?>">
             <a href="Patient-MyProfile.php"><i class="zmdi zmdi-account-circle"></i><span>My Profile</span></a>
+        </li>
+        <li style="margin-top:auto; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+            <a href="logout.php" style="color:#ff5252;"><i class="zmdi zmdi-power"></i><span>Logout</span></a>
         </li>
     </ul>
 </div>
