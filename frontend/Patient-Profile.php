@@ -363,14 +363,18 @@ $(function(){
     });
     chart.render();
 
-    <?php foreach ($ecgJsonArray as $index => $data) { ?>
+    <?php foreach ($ecgJsonArray as $index => $data) { 
+        if ($data !== '[]' && $data !== '') { ?>
         $("#ecgPlots").append("<div id=\"chart_<?php echo $index; ?>\" style=\"height:300px; width:100%; margin-bottom:20px;\"></div>");
         new CanvasJS.Chart("chart_<?php echo $index; ?>", {
             theme: "light2",
             title: { text: "ECG Sample" },
             data: [{ type: "spline", color: "red", dataPoints: <?php echo $data; ?>.map(v => ({y: v})) }]
         }).render();
-    <?php } ?>
+    <?php } } ?>
+    if ($("#ecgPlots").is(':empty')) {
+        $("#ecgPlots").html("<div class='text-center p-20 text-muted'>No ECG waveform data available for recent readings.</div>");
+    }
 });
 
 // Profile Image Upload
