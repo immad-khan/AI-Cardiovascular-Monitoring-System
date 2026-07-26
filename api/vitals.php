@@ -40,6 +40,10 @@ try {
     $ai_prediction = null;
     $confidence = 0.0;
     $inference_time = 0;
+    $hrv_sdnn = null;
+    $hrv_rmssd = null;
+    $signal_quality = null;
+    $arrhythmia_flags = null;
 
     if ($ecg_raw) {
         $python_path = "python";
@@ -52,16 +56,21 @@ try {
             $confidence = $ai_result['confidenceScore'];
             $inference_time = $ai_result['inference_time_ms'];
             if (isset($ai_result['heartRate']) && $ai_result['heartRate'] > 0) {
-                $hr = (int) round($ai_result['heartRate']); // Cast float BPM to int for DB
+                $hr = (int) round($ai_result['heartRate']);
             }
+            // New Phase 1 fields
+            $hrv_sdnn = $ai_result['hrv_sdnn'] ?? null;
+            $hrv_rmssd = $ai_result['hrv_rmssd'] ?? null;
+            $signal_quality = isset($ai_result['signal_quality']) ? (int)$ai_result['signal_quality'] : null;
+            $arrhythmia_flags = !empty($ai_result['arrhythmia_flags']) ? implode('; ', $ai_result['arrhythmia_flags']) : null;
         }
     }
 
-    // Insert Vitals
+    // Insert Vitals (including new HRV + signal quality fields)
     $stmt = $conn->prepare('INSERT INTO vital_sign_readings 
-        ("deviceID", "heartRate", "SpO2", "RespirationImpedance", device_type, final_prediction, "confidenceScore") 
-        VALUES (?, ?, ?, ?, \'Raspberry Pi 4\', ?, ?) RETURNING "readingID"');
-    $stmt->execute([$deviceID, $hr, $spo2, $resp, $ai_prediction, $confidence]);
+        ("deviceID", "heartRate", "SpO2", "RespirationImpedance", device_type, final_prediction, "confidenceScore", hrv_sdnn, hrv_rmssd, signal_quality, arrhythmia_flags) 
+        VALUES (?, ?, ?, ?, \'Raspberry Pi 4\', ?, ?, ?, ?, ?, ?) RETURNING "readingID"');
+    $stmt->execute([$deviceID, $hr, $spo2, $resp, $ai_prediction, $confidence, $hrv_sdnn, $hrv_rmssd, $signal_quality, $arrhythmia_flags]);
     $reading = $stmt->fetch();
     $readingID = $reading["readingID"];
 

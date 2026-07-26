@@ -48,8 +48,10 @@ try {
     $vitalsData = ["heartRate" => [], "SpO2" => [], "Respiration" => []];
     $ecgDates = [];
     $ecgJsonArray = [];
+    $latestReading = null;
 
-    foreach ($readings as $row) {
+    foreach ($readings as $idx => $row) {
+        if ($idx === 0) $latestReading = $row; // Most recent reading
         $ecgDates[] = $row["timestamp"];
         $vitalsData["heartRate"][] = $row["heartRate"];
         $vitalsData["SpO2"][] = $row["SpO2"];
@@ -128,23 +130,99 @@ try {
                             <div class="col-6">HR: <h5 class="text-info"><?php echo $vitalsData["heartRate"][0] ?? "--"; ?> <small>BPM</small></h5></div>
                             <div class="col-6">SpO2: <h5 class="text-success"><?php echo $vitalsData["SpO2"][0] ?? "--"; ?>%</h5></div>
                         </div>
+                        <?php if ($latestReading): ?>
+                        <hr>
+                        <!-- Signal Quality Badge -->
+                        <?php 
+                            $sqi = $latestReading['signal_quality'] ?? null;
+                            $sqi_label = '--'; $sqi_class = 'secondary';
+                            if ($sqi !== null) {
+                                if ($sqi >= 80) { $sqi_label = "Good ($sqi/100)"; $sqi_class = 'success'; }
+                                elseif ($sqi >= 50) { $sqi_label = "Fair ($sqi/100)"; $sqi_class = 'warning'; }
+                                else { $sqi_label = "Poor ($sqi/100)"; $sqi_class = 'danger'; }
+                            }
+                        ?>
+                        <div class="m-t-5">
+                            <small class="text-muted">Signal Quality:</small><br>
+                            <span class="badge badge-<?php echo $sqi_class; ?>"><?php echo $sqi_label; ?></span>
+                        </div>
+                        <!-- AI Rhythm Result -->
+                        <?php if (!empty($latestReading['final_prediction'])): ?>
+                        <div class="m-t-10">
+                            <small class="text-muted">AI Rhythm Analysis:</small><br>
+                            <span class="badge badge-info" style="white-space:normal;text-align:left;">
+                                <?php echo htmlspecialchars($latestReading['final_prediction']); ?>
+                            </span>
+                            <small class="text-muted d-block m-t-5">
+                                Confidence: <?php echo round(($latestReading['confidenceScore'] ?? 0) * 100, 1); ?>%
+                            </small>
+                        </div>
+                        <?php endif; ?>
+                        <!-- HRV Metrics -->
+                        <hr>
+                        <strong><small>HRV Metrics</small></strong>
+                        <div class="row m-t-5">
+                            <div class="col-6">
+                                <small class="text-muted">SDNN</small>
+                                <h6 class="text-primary m-b-0"><?php echo $latestReading['hrv_sdnn'] !== null ? round($latestReading['hrv_sdnn'], 1) . ' ms' : '--'; ?></h6>
+                                <small class="text-muted" style="font-size:0.65rem;">Normal &gt;50ms</small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">RMSSD</small>
+                                <h6 class="text-primary m-b-0"><?php echo $latestReading['hrv_rmssd'] !== null ? round($latestReading['hrv_rmssd'], 1) . ' ms' : '--'; ?></h6>
+                                <small class="text-muted" style="font-size:0.65rem;">Normal &gt;20ms</small>
+                            </div>
+                        </div>
+                        <!-- Arrhythmia Flags -->
+                        <?php if (!empty($latestReading['arrhythmia_flags'])): ?>
+                        <div class="m-t-10">
+                            <small class="text-muted">Detected Flags:</small><br>
+                            <?php foreach(explode('; ', $latestReading['arrhythmia_flags']) as $flag): ?>
+                                <span class="badge badge-warning m-b-3" style="white-space:normal;"><?php echo htmlspecialchars($flag); ?></span><br>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
                 <div class="card">
-                    <div class="header"><h2><strong>AI Monitoring</strong> Insights</h2></div>
+                    <div class="header"><h2><strong>AI Monitoring</strong> Insights (Historical)</h2></div>
                     <div class="body table-responsive">
                         <table class="table table-sm">
-                            <thead><tr><th>Time</th><th>Result</th><th>PDR</th></tr></thead>
+                            <thead><tr><th>Time</th><th>Rhythm / AI Result</th><th>HRV SDNN</th><th>HRV RMSSD</th><th>SQI</th></tr></thead>
                             <tbody>
-                                <?php foreach($ai_history as $log): ?>
+                                <?php 
+                                $hist_stmt = $conn->prepare(
+                                    "SELECT vr.timestamp, vr.final_prediction, vr.\"confidenceScore\", vr.hrv_sdnn, vr.hrv_rmssd, vr.signal_quality, vr.arrhythmia_flags
+                                     FROM vital_sign_readings vr
+                                     JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
+                                     WHERE md.\"patientID\" = ?
+                                     ORDER BY vr.timestamp DESC LIMIT 15"
+                                );
+                                $hist_stmt->execute([$patientId]);
+                                $hist_rows = $hist_stmt->fetchAll(PDO::FETCH_ASSOC);
+                                foreach($hist_rows as $log):
+                                    $sqi_v = $log['signal_quality'];
+                                    $sqi_c = $sqi_v >= 80 ? 'success' : ($sqi_v >= 50 ? 'warning' : 'danger');
+                                ?>
                                     <tr>
-                                        <td><small><?php echo date('H:i', strtotime($log['datetime'])); ?></small></td>
-                                        <td><span class="badge badge-info"><?php echo $log['device']; ?></span></td>
-                                        <td><?php echo round($log['PDR'] ?? 0); ?>%</td>
+                                        <td><small><?php echo date('M d H:i', strtotime($log['timestamp'])); ?></small></td>
+                                        <td>
+                                            <?php if($log['final_prediction']): ?>
+                                            <span class="badge badge-info" style="white-space:normal;"><?php echo htmlspecialchars($log['final_prediction']); ?></span>
+                                            <?php else: ?><span class="text-muted">--</span><?php endif; ?>
+                                        </td>
+                                        <td><?php echo $log['hrv_sdnn'] !== null ? round($log['hrv_sdnn'],1).' ms' : '--'; ?></td>
+                                        <td><?php echo $log['hrv_rmssd'] !== null ? round($log['hrv_rmssd'],1).' ms' : '--'; ?></td>
+                                        <td>
+                                            <?php if($sqi_v !== null): ?>
+                                            <span class="badge badge-<?php echo $sqi_c; ?>"><?php echo $sqi_v; ?></span>
+                                            <?php else: ?>--<?php endif; ?>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
-                                <?php if(empty($ai_history)) echo "<tr><td colspan='3' class='text-center'>No AI logs found.</td></tr>"; ?>
+                                <?php if(empty($hist_rows)) echo "<tr><td colspan='5' class='text-center'>No AI logs found.</td></tr>"; ?>
                             </tbody>
                         </table>
                     </div>
