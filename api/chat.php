@@ -46,7 +46,7 @@ switch ($action) {
             $stmt->execute([$userType, $senderId, $receiverType, $receiverId, $patientId, $message]);
             echo json_encode(['success' => true, 'id' => $conn->lastInsertId('chat_messages_id_seq')]);
         } catch (PDOException $e) {
-            echo json_encode(['success' => false, 'message' => 'DB error']);
+            echo json_encode(['success' => false, 'message' => 'DB error: ' . $e->getMessage()]);
         }
         exit;
 
