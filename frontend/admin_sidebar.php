@@ -59,5 +59,9 @@
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'device-monitor.php') ? 'active open' : ''; ?>">
             <a href="device-monitor.php"><i class="zmdi zmdi-cast-connected"></i><span>IoT Device Monitor</span></a>
         </li>
+        <li class="header">ENGAGEMENT</li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Admin-Subscriptions.php') ? 'active' : ''; ?>">
+            <a href="Admin-Subscriptions.php"><i class="zmdi zmdi-email"></i><span>Subscriptions</span></a>
+        </li>
     </ul>
 </div>

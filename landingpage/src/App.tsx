@@ -150,13 +150,6 @@ const initialSubscription: SubscriptionData = {
 
 /* ─── Sign-In View ─── */
 function SignInView({ onBack }: { onBack: () => void }) {
-  const [notice, setNotice] = useState('');
-
-  function handleSignIn(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setNotice('Demo mode — connect this form to your existing portal login endpoint.');
-  }
-
   return (
     <main className="signin-page">
       <div className="signin-image" aria-hidden="true" />
@@ -171,7 +164,7 @@ function SignInView({ onBack }: { onBack: () => void }) {
         <div className="signin-mark"><Icon name="heart" size={26} /></div>
         <h1 id="signin-title">Sign In</h1>
         <p className="signin-intro">Personalized Portal for Admin, Doctor &amp; Patients</p>
-        <form className="signin-form" onSubmit={handleSignIn}>
+        <form className="signin-form" action="../index.php" method="POST">
           <label className="signin-input">
             <input type="text" name="username" placeholder="User Name" required />
             <span className="input-icon"><Icon name="user" size={18} /></span>
@@ -189,7 +182,6 @@ function SignInView({ onBack }: { onBack: () => void }) {
             </div>
           </div>
           <button className="primary-button full-button signin-cta" type="submit">SIGN IN</button>
-          {notice && <p className="form-notice">{notice}</p>}
         </form>
         <p className="signin-footnote">Contact your administrator for portal access</p>
       </section>
@@ -202,14 +194,18 @@ function SignInView({ onBack }: { onBack: () => void }) {
 function SubscriptionModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState<SubscriptionData>(initialSubscription);
-  const [paymentFile, setPaymentFile] = useState('');
+  const [paymentFile, setPaymentFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function updateField(field: keyof SubscriptionData, value: string) {
     setForm((c) => ({ ...c, [field]: value }));
   }
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
-    setPaymentFile(e.target.files?.[0]?.name ?? '');
+    const file = e.target.files?.[0] ?? null;
+    setPaymentFile(file);
   }
 
   function handleStep1(e: FormEvent<HTMLFormElement>) {
@@ -217,9 +213,26 @@ function SubscriptionModal({ onClose }: { onClose: () => void }) {
     setStep(2);
   }
 
-  function handleStep2(e: FormEvent<HTMLFormElement>) {
+  async function handleStep2(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStep(3);
+    if (!paymentFile) { setError('Please upload a payment screenshot.'); return; }
+    setSubmitting(true);
+    setError('');
+    try {
+      const fd = new FormData();
+      fd.append('name', form.name);
+      fd.append('email', form.email);
+      fd.append('phone', form.phone);
+      fd.append('age', form.age);
+      fd.append('gender', form.gender);
+      fd.append('note', form.note);
+      fd.append('payment_screenshot', paymentFile);
+      const res = await fetch('../../api/submit_subscription.php', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.status === 'success') { setStep(3); }
+      else { setError(data.message || 'Submission failed. Please try again.'); }
+    } catch { setError('Network error. Please try again.'); }
+    finally { setSubmitting(false); }
   }
 
   return (
@@ -283,13 +296,14 @@ function SubscriptionModal({ onClose }: { onClose: () => void }) {
             <div className="field-grid" style={{ marginTop: 20 }}>
               <label className="upload-field wide-field">
                 <span>Payment screenshot</span>
-                <input type="file" accept="image/*" onChange={handleFile} required />
-                <span className="upload-control"><Icon name="upload" size={17} /> {paymentFile || 'Click to upload your payment screenshot'}</span>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} required />
+                <span className="upload-control"><Icon name="upload" size={17} /> {paymentFile?.name || 'Click to upload your payment screenshot'}</span>
               </label>
             </div>
+            {error && <p className="form-notice" style={{ color: '#ff5252', marginTop: 12 }}>{error}</p>}
             <div className="modal-actions">
               <button className="outline-button" type="button" onClick={() => setStep(1)}>← Back</button>
-              <button className="primary-button" type="submit">Submit membership <Icon name="arrow" size={18} /></button>
+              <button className="primary-button" type="submit" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit membership'} {!submitting && <Icon name="arrow" size={18} />}</button>
             </div>
           </form>
         )}
