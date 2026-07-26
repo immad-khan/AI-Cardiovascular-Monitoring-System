@@ -15,9 +15,9 @@ if (!$patientId) {
     exit();
 }
 
-try {
-    // 1. Fetch Patient Info
-    $stmt = $conn->prepare("SELECT * FROM patients WHERE \"patientID\" = ?");
+    try {
+    // 1. Fetch Patient Info (include profile_picture)
+    $stmt = $conn->prepare("SELECT *, COALESCE(profile_picture, '') as profile_picture FROM patients WHERE \"patientID\" = ?");
     $stmt->execute([$patientId]);
     $patientData = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -119,6 +119,19 @@ try {
                 <div class="card member-card">
                     <div class="header l-blue"><h4>ID: <?php echo $patientId ?></h4></div>
                     <div class="body">
+                        <div class="m-t-10 text-center">
+                            <div id="profile-img-container" style="position:relative;display:inline-block;">
+                                <img id="profile-img-preview" 
+                                     src="<?php echo !empty($patientData['profile_picture']) ? htmlspecialchars($patientData['profile_picture']) : '../assets/images/profile_av.jpg'; ?>" 
+                                     alt="Profile" 
+                                     style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #00bcd4;">
+                                <label for="profile-img-input" style="position:absolute;bottom:5px;right:5px;background:#00bcd4;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;" title="Change Profile Photo">
+                                    <i class="zmdi zmdi-camera" style="color:#fff;font-size:16px;"></i>
+                                </label>
+                                <input type="file" id="profile-img-input" accept="image/*" style="display:none;">
+                            </div>
+                            <div id="profile-img-status" class="m-t-5" style="font-size:12px;"></div>
+                        </div>
                         <div class="m-t-10">
                             <strong>Full Name:</strong> <p><?php echo htmlspecialchars($patientData["name"]); ?></p>
                             <strong>Medical History:</strong>
@@ -347,6 +360,53 @@ $(function(){
             data: [{ type: "spline", color: "red", dataPoints: <?php echo $data; ?>.map(v => ({y: v})) }]
         }).render();
     <?php } ?>
+});
+
+// Profile Image Upload
+document.getElementById('profile-img-input').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    
+    var status = document.getElementById('profile-img-status');
+    var preview = document.getElementById('profile-img-preview');
+    
+    // Validate
+    if (file.size > 5 * 1024 * 1024) {
+        status.innerHTML = '<span class="text-danger">File too large (max 5MB)</span>';
+        return;
+    }
+    
+    // Preview
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        preview.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload
+    var formData = new FormData();
+    formData.append('profile_image', file);
+    
+    status.innerHTML = '<span class="text-info">Uploading...</span>';
+    
+    fetch('../api/upload_profile_image.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            preview.src = data.url;
+            status.innerHTML = '<span class="text-success">Profile image updated!</span>';
+            setTimeout(function() { status.innerHTML = ''; }, 3000);
+        } else {
+            status.innerHTML = '<span class="text-danger">' + (data.message || 'Upload failed') + '</span>';
+        }
+    })
+    .catch(function() {
+        status.innerHTML = '<span class="text-danger">Network error</span>';
+    });
 });
 </script>
 </body>

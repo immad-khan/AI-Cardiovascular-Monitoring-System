@@ -11,7 +11,22 @@ try {
     <ul class="list">
         <li>
             <div class="user-info">
-                <div class="image"><a href="javascript:void(0);" class="waves-effect waves-block"><img src="../assets/images/profile_av.jpg" alt="User"></a></div>
+                <div class="image">
+                    <?php
+                    $doc_avatar = '../assets/images/profile_av.jpg';
+                    if (isset($conn) && isset($_SESSION['user_id'])) {
+                        try {
+                            $avatar_stmt = $conn->prepare('SELECT COALESCE(profile_picture, \'\') as profile_picture FROM "doctorProfile" WHERE "userID" = ?');
+                            $avatar_stmt->execute([$_SESSION['user_id']]);
+                            $avatar_row = $avatar_stmt->fetch(PDO::FETCH_ASSOC);
+                            if ($avatar_row && !empty($avatar_row['profile_picture'])) {
+                                $doc_avatar = htmlspecialchars($avatar_row['profile_picture']);
+                            }
+                        } catch (Exception $e) {}
+                    }
+                    ?>
+                    <a href="javascript:void(0);" class="waves-effect waves-block"><img src="<?php echo $doc_avatar; ?>" alt="User"></a>
+                </div>
                 <div class="detail">
                     <h4><?php echo $_SESSION['username'] ?? 'Doctor'; ?></h4>
                     <small>Doctor Account</small>                        

@@ -2,7 +2,22 @@
     <ul class="list">
         <li>
             <div class="user-info">
-                <div class="image"><a href="profile.html" class="waves-effect waves-block"><img src="../assets/images/admin.png" alt="User"></a></div>
+                <div class="image">
+                    <?php
+                    $admin_avatar = '../assets/images/admin.png';
+                    if (isset($conn) && isset($_SESSION['user_id'])) {
+                        try {
+                            $avatar_stmt = $conn->prepare('SELECT COALESCE(profile_picture, \'\') as profile_picture FROM users WHERE "userID" = ?');
+                            $avatar_stmt->execute([$_SESSION['user_id']]);
+                            $avatar_row = $avatar_stmt->fetch(PDO::FETCH_ASSOC);
+                            if ($avatar_row && !empty($avatar_row['profile_picture'])) {
+                                $admin_avatar = htmlspecialchars($avatar_row['profile_picture']);
+                            }
+                        } catch (Exception $e) {}
+                    }
+                    ?>
+                    <a href="Admin-Profile.php" class="waves-effect waves-block"><img src="<?php echo $admin_avatar; ?>" alt="User"></a>
+                </div>
                 <div class="detail">
                     <h4>Administrator</h4>
                     <small><?php echo $_SESSION['username'] ?? 'Admin'; ?></small>                        

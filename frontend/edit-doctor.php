@@ -13,9 +13,14 @@ if (!$userID) {
     exit();
 }
 
+// Ensure profile_picture column exists
+try {
+    $conn->exec('ALTER TABLE "doctorProfile" ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(500)');
+} catch (PDOException $e) {}
+
 // Fetch current data
 try {
-    $stmt = $conn->prepare("SELECT u.username, u.email, p.* FROM users u LEFT JOIN \"doctorProfile\" p ON u.\"userID\" = p.\"userID\" WHERE u.\"userID\" = ? AND u.role = 'doctor'");
+    $stmt = $conn->prepare("SELECT u.username, u.email, COALESCE(p.profile_picture, '') as profile_picture, p.* FROM users u LEFT JOIN \"doctorProfile\" p ON u.\"userID\" = p.\"userID\" WHERE u.\"userID\" = ? AND u.role = 'doctor'");
     $stmt->execute([$userID]);
     $doctor = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$doctor) {
@@ -98,6 +103,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
                         <form method="POST">
                             <div class="row clearfix">
+                                <div class="col-sm-12 text-center m-b-20">
+                                    <div style="position:relative;display:inline-block;">
+                                        <img id="doc-profile-img" 
+                                             src="<?php echo !empty($doctor['profile_picture']) ? htmlspecialchars($doctor['profile_picture']) : '../assets/images/profile_av.jpg'; ?>" 
+                                             style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #00bcd4;" alt="Profile">
+                                        <label for="doc-profile-input" style="position:absolute;bottom:5px;right:5px;background:#00bcd4;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;" title="Change Photo">
+                                            <i class="zmdi zmdi-camera" style="color:#fff;"></i>
+                                        </label>
+                                        <input type="file" id="doc-profile-input" accept="image/*" style="display:none;">
+                                    </div>
+                                    <div id="doc-img-status" class="m-t-5" style="font-size:12px;"></div>
+                                </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
                                         <label>Full Name</label>
@@ -140,5 +157,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 </section>
+<script src="../assets/bundles/libscripts.bundle.js"></script>
+<script>
+document.getElementById('doc-profile-input').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    var status = document.getElementById('doc-img-status');
+    var preview = document.getElementById('doc-profile-img');
+
+    if (file.size > 5 * 1024 * 1024) {
+        status.innerHTML = '<span class="text-danger">Max 5MB</span>';
+        return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function(ev) { preview.src = ev.target.result; };
+    reader.readAsDataURL(file);
+
+    var formData = new FormData();
+    formData.append('profile_image', file);
+    status.innerHTML = '<span class="text-info">Uploading...</span>';
+
+    fetch('../api/upload_profile_image.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            preview.src = data.url;
+            status.innerHTML = '<span class="text-success">Updated!</span>';
+            setTimeout(function() { status.innerHTML = ''; }, 3000);
+        } else {
+            status.innerHTML = '<span class="text-danger">' + (data.message || 'Failed') + '</span>';
+        }
+    })
+    .catch(function() {
+        status.innerHTML = '<span class="text-danger">Network error</span>';
+    });
+});
+</script>
 </body>
 </html>
