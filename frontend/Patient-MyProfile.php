@@ -203,28 +203,21 @@ try {
                     <div class="body">
                         <?php if ($latestReading): ?>
                         <div class="row m-b-20">
-                            <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="col-lg-4 col-md-6 col-sm-6">
                                 <div class="stat-mini">
                                     <i class="zmdi zmdi-favorite text-danger" style="font-size:1.5rem;"></i>
                                     <h4 class="text-danger m-t-5"><?php echo $latestReading['heartRate'] ?? '--'; ?></h4>
                                     <small>Heart Rate (BPM)</small>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6 col-sm-6">
-                                <div class="stat-mini">
-                                    <i class="zmdi zmdi-brightness-low text-success" style="font-size:1.5rem;"></i>
-                                    <h4 class="text-success m-t-5"><?php echo $latestReading['SpO2'] ?? '--'; ?><small>%</small></h4>
-                                    <small>SpO2</small>
-                                </div>
-                            </div>
-                            <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="col-lg-4 col-md-6 col-sm-6">
                                 <div class="stat-mini">
                                     <i class="zmdi zmdi-air" style="font-size:1.5rem;color:#ff9800;"></i>
                                     <h4 class="m-t-5" style="color:#ff9800;"><?php echo $latestReading['RespirationImpedance'] ?? '--'; ?></h4>
                                     <small>Respiration</small>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="col-lg-4 col-md-6 col-sm-6">
                                 <?php
                                 $sqi = $latestReading['signal_quality'] ?? null;
                                 $sqi_class = 'secondary';

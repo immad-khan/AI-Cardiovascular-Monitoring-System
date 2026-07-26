@@ -138,7 +138,7 @@ try {
             <div class="panel-section">
                 <div class="panel-title"><i class="zmdi zmdi-info-outline m-r-5"></i>About</div>
                 <p style="font-size:12px;color:#888;line-height:1.5;">
-                    I can see your real-time ECG data, vital signs (HR, SpO2, respiration), HRV metrics, AI rhythm predictions, and alert history. Ask me questions about any of your health data.
+                    I can see your real-time ECG data, vital signs (HR, respiration), HRV metrics, AI rhythm predictions, and alert history. Ask me questions about any of your health data.
                 </p>
                 <p style="font-size:11px;color:#bbb;margin:0;">
                     Powered by LLaMA 3.3 70B via Groq

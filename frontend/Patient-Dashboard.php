@@ -103,13 +103,6 @@ $latest = $readings[0] ?? null;
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 col-sm-6">
-                <div class="card dash-stat" style="background:linear-gradient(135deg,#43a047,#2e7d32);color:#fff;">
-                    <i class="zmdi zmdi-brightness-low"></i>
-                    <h3><?php echo $latest['SpO2'] ?? '--'; ?><small style="color:rgba(255,255,255,0.8);">%</small></h3>
-                    <small style="color:rgba(255,255,255,0.7);">SpO2 Level</small>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card dash-stat" style="background:linear-gradient(135deg,#1e88e5,#1565c0);color:#fff;">
                     <i class="zmdi zmdi-chart-line"></i>
                     <h3><?php echo $latest['hrv_sdnn'] !== null ? round($latest['hrv_sdnn'],0) : '--'; ?> <small style="color:rgba(255,255,255,0.8);">ms</small></h3>

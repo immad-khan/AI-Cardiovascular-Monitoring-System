@@ -113,15 +113,11 @@ try {
                 <div class="card" style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-left:4px solid #1565c0;">
                     <div class="body">
                         <div class="row">
-                            <div class="col-md-2 col-6 text-center">
+                            <div class="col-md-3 col-6 text-center">
                                 <small style="color:#666;">HEART RATE</small>
                                 <h4 style="color:#1565c0;margin:0;"><?php echo $latestReading['heartRate'] ?? '--'; ?> <small>BPM</small></h4>
                             </div>
-                            <div class="col-md-2 col-6 text-center">
-                                <small style="color:#666;">SpO2</small>
-                                <h4 style="color:#2e7d32;margin:0;"><?php echo $latestReading['SpO2'] ?? '--'; ?>%</h4>
-                            </div>
-                            <div class="col-md-2 col-6 text-center">
+                            <div class="col-md-3 col-6 text-center">
                                 <small style="color:#666;">RESP</small>
                                 <h4 style="color:#e65100;margin:0;"><?php echo $latestReading['RespirationImpedance'] ?? '--'; ?></h4>
                             </div>
