@@ -107,7 +107,7 @@ h1 em, h2 em {
 }
 .hero-background, .hero-background::after { position: absolute; inset: 0; }
 .hero-background {
-  background: url('../assets/images/digihealth-home-monitor.png') center center / cover no-repeat;
+  background: url('../../assets/images/digihealth-home-monitor.png') center center / cover no-repeat;
   animation: hero-zoom 14s ease-out both;
 }
 .hero-background::after {
@@ -565,7 +565,7 @@ h1 em, h2 em {
 /* ───────────────────────── SIGN IN ───────────────────────── */
 .signin-page { position: relative; display: flex; min-height: 100svh; overflow: hidden; background: #eff6f3; }
 .signin-image, .signin-wash { position: absolute; inset: 0; }
-.signin-image { background: url('../assets/images/digihealth-home-monitor.png') center / cover no-repeat; filter: blur(6px) saturate(.62); transform: scale(1.05); }
+.signin-image { background: url('../../assets/images/digihealth-home-monitor.png') center / cover no-repeat; filter: blur(6px) saturate(.62); transform: scale(1.05); }
 .signin-wash { background: linear-gradient(90deg, rgba(237,246,242,.94), rgba(237,246,242,.78) 44%, rgba(237,246,242,.86)); }
 .signin-header {
   position: absolute; z-index: 2; top: 0; right: 0; left: 0;
