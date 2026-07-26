@@ -58,6 +58,13 @@ function handlePatientAction($conn, $postData) {
             $msg = "Patient record updated successfully!";
         } else {
             // INSERT NEW PATIENT
+            // Prevent ugly SQL duplicate key errors by pre-checking patient ID
+            $check_id = $conn->prepare("SELECT id FROM patients WHERE \"patientID\" = ?");
+            $check_id->execute([$patient_id]);
+            if ($check_id->fetch()) {
+                throw new Exception("Patient ID '$patient_id' already exists in the system. Please use a unique Patient ID.");
+            }
+            
             $sql = "INSERT INTO patients (\"patientID\", name, phone_no, email, age, gender, medical_history, \"assignedDoctorID\", staff_name, ward_no, date) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
@@ -119,6 +126,10 @@ function handlePatientAction($conn, $postData) {
                 // De-link any existing active devices for this patient first
                 $delink_sql = "UPDATE device_patient_link SET delinked_at = CURRENT_TIMESTAMP WHERE patient_id = ? AND delinked_at IS NULL";
                 $conn->prepare($delink_sql)->execute([$patient_id]);
+                
+                // De-link this device from any other patient it might be actively linked to
+                $delink_dev_sql = "UPDATE device_patient_link SET delinked_at = CURRENT_TIMESTAMP WHERE mac_address = ? AND delinked_at IS NULL";
+                $conn->prepare($delink_dev_sql)->execute([$mac_address]);
 
                 // Create new link
                 $link_sql = "INSERT INTO device_patient_link (patient_id, mac_address) VALUES (?, ?)";

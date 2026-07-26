@@ -124,9 +124,9 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
 												foreach ($devices as $row) {
 													$badge = ($row['status'] == 'Online') ? 'info' : (($row['status'] == 'Offline') ? 'danger' : 'warning');
 													echo "<tr>";
-													echo "<td>" . htmlspecialchars($row['deviceID']) . "</td>";
-													echo "<td>" . htmlspecialchars($row['mac_address']) . "</td>";
-													echo "<td>" . htmlspecialchars($row['model']) . "</td>";
+													echo "<td>" . htmlspecialchars((string)$row['deviceID']) . "</td>";
+													echo "<td>" . htmlspecialchars((string)$row['mac_address']) . "</td>";
+													echo "<td>" . htmlspecialchars((string)$row['model']) . "</td>";
 													echo "<td>" . ($row['patient_name'] ? htmlspecialchars($row['patient_name']) : '<span class="text-muted">Unassigned</span>') . "</td>";
 													echo "<td><span class='badge badge-$badge'>" . htmlspecialchars($row['status'] ?? 'Offline') . "</span></td>";
 													echo '<td>
@@ -195,7 +195,7 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
                         <select name="patientID" id="edit_patient_id" class="modern-input">
                             <option value="">-- No Patient Assigned --</option>
                             <?php foreach($all_patients as $pt): ?>
-                                <option value="<?php echo $pt['patientID']; ?>"><?php echo htmlspecialchars($pt['name']); ?></option>
+                                <option value="<?php echo $pt['patientID']; ?>"><?php echo htmlspecialchars($pt['name'] . ' (' . $pt['patientID'] . ')'); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

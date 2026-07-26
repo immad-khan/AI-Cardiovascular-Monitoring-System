@@ -25,18 +25,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Initializing variables
-$patientId = $_GET['patientId'] ?? '';
-$name = '';
-$phoneNo = '';
-$email = '';
-$age = '';
-$gender = '';
-$medicalHistory = '';
+$patientId = $_POST['patientId'] ?? ($_GET['patientId'] ?? '');
+$name = $_POST['name'] ?? '';
+$phoneNo = $_POST['phoneNo'] ?? '';
+$email = $_POST['email'] ?? '';
+$age = $_POST['age'] ?? '';
+$gender = $_POST['gender'] ?? '';
+$medicalHistory = $_POST['medicalHistory'] ?? '';
 // Auto-assign the doctor if the current user is a doctor
 $assignedDoctorID = ($_SESSION['user_type'] === 'doctor') ? $_SESSION['user_id'] : null;
-$staffName = '';
-$wardNo = '';
-$date = date('Y-m-d H:i:s');
+$staffName = $_POST['staff_name'] ?? '';
+$wardNo = $_POST['ward_no'] ?? '';
+$date = $_POST['Date'] ?? date('Y-m-d H:i:s');
 $linked_mac_address = "";
 
 if ($patientId) {
@@ -80,7 +80,7 @@ try {
 // Fetch available (unassigned) devices
 $available_devices = [];
 try {
-    $dev_sql = "SELECT mac_address, model FROM monitoring_devices WHERE status != 'Assigned' OR \"patientID\" = ?";
+    $dev_sql = "SELECT mac_address, model FROM monitoring_devices WHERE status != 'Assigned' OR \"patientID\" IS NULL OR \"patientID\" = '' OR \"patientID\" = ?";
     $dev_stmt = $conn->prepare($dev_sql);
     $dev_stmt->execute([$patientId]);
     $available_devices = $dev_stmt->fetchAll(PDO::FETCH_ASSOC);
