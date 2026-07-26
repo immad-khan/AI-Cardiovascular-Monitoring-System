@@ -17,7 +17,6 @@ if (!isset($_POST["mac_address"])) {
 try {
     $mac = $_POST["mac_address"];
     $hr = isset($_POST["heartRate"]) ? (int) $_POST["heartRate"] : null;
-    $spo2 = isset($_POST["SpO2"]) ? (float) $_POST["SpO2"] : null;
     $temp = isset($_POST["Temperature"]) ? (float) $_POST["Temperature"] : null;
     $resp = isset($_POST["RespirationRate"]) ? (int) $_POST["RespirationRate"] : null;
     $ecg_raw = isset($_POST["ECG_Raw"]) ? $_POST["ECG_Raw"] : null;
@@ -68,9 +67,9 @@ try {
 
     // Insert Vitals (including new HRV + signal quality fields)
     $stmt = $conn->prepare('INSERT INTO vital_sign_readings 
-        ("deviceID", "heartRate", "SpO2", "RespirationImpedance", device_type, final_prediction, "confidenceScore", hrv_sdnn, hrv_rmssd, signal_quality, arrhythmia_flags) 
-        VALUES (?, ?, ?, ?, \'Raspberry Pi 4\', ?, ?, ?, ?, ?, ?) RETURNING "readingID"');
-    $stmt->execute([$deviceID, $hr, $spo2, $resp, $ai_prediction, $confidence, $hrv_sdnn, $hrv_rmssd, $signal_quality, $arrhythmia_flags]);
+        ("deviceID", "heartRate", "RespirationImpedance", device_type, final_prediction, "confidenceScore", hrv_sdnn, hrv_rmssd, signal_quality, arrhythmia_flags) 
+        VALUES (?, ?, ?, \'Raspberry Pi 4\', ?, ?, ?, ?, ?, ?) RETURNING "readingID"');
+    $stmt->execute([$deviceID, $hr, $resp, $ai_prediction, $confidence, $hrv_sdnn, $hrv_rmssd, $signal_quality, $arrhythmia_flags]);
     $reading = $stmt->fetch();
     $readingID = $reading["readingID"];
 
@@ -87,21 +86,6 @@ try {
     $patientInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
 
     // Alerts
-    if ($spo2 !== null && $spo2 < 90) {
-        $msg = "CRITICAL: Low SpO2 detected ($spo2%) for device $mac";
-        $stmt = $conn->prepare('INSERT INTO "CRITICAL_ALERT" ("deviceID", message, status) VALUES (?, ?, \'Active\') RETURNING "alertID"');
-        $stmt->execute([$deviceID, $msg]);
-        $alertRow = $stmt->fetch();
-        if ($patientInfo && !empty($patientInfo['doctor_email'])) {
-            sendEmail($patientInfo['doctor_email'], "CRITICAL Vitals Alert", "<p>$msg</p>");
-        }
-        
-        if ($alertRow && $patientInfo && $patientInfo['assignedDoctorID']) {
-            $taskStmt = $conn->prepare('INSERT INTO doctor_tasks ("doctorID", "patientID", "readingID", "alertID", "task_type") VALUES (?, ?, ?, ?, \'Review SpO2 Alert\')');
-            $taskStmt->execute([$patientInfo['assignedDoctorID'], $patientInfo['patientID'], $readingID, $alertRow['alertID']]);
-        }
-    }
-
     // AI based Critical Alert
     if ($ai_prediction && (strpos(strtolower($ai_prediction), 'ventricular') !== false || strpos(strtolower($ai_prediction), 'tachycardia') !== false)) {
         $msg = "AI ALERT: Abnormal Heart Rhythm detected ($ai_prediction) for device $mac";

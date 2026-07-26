@@ -45,7 +45,7 @@ if (!$patientId) {
     $stmt->execute([$patientId]);
     $readings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $vitalsData = ["heartRate" => [], "SpO2" => [], "Respiration" => []];
+    $vitalsData = ["heartRate" => [], "Respiration" => []];
     $ecgDates = [];
     $ecgJsonArray = [];
     $latestReading = null;
@@ -54,7 +54,6 @@ if (!$patientId) {
         if ($idx === 0) $latestReading = $row; // Most recent reading
         $ecgDates[] = $row["timestamp"];
         $vitalsData["heartRate"][] = $row["heartRate"];
-        $vitalsData["SpO2"][] = $row["SpO2"];
         $vitalsData["Respiration"][] = $row["RespirationImpedance"];
 
         $stmt_ecg = $conn->prepare("SELECT ecg_value FROM esp_ecg_data WHERE \"readingID\" = ? LIMIT 500");
@@ -140,8 +139,7 @@ if (!$patientId) {
                         <hr>
                         <strong>Latest Vitals Snapshot</strong>
                         <div class="row m-t-10">
-                            <div class="col-6">HR: <h5 class="text-info"><?php echo $vitalsData["heartRate"][0] ?? "--"; ?> <small>BPM</small></h5></div>
-                            <div class="col-6">SpO2: <h5 class="text-success"><?php echo $vitalsData["SpO2"][0] ?? "--"; ?>%</h5></div>
+                            <div class="col-12">HR: <h5 class="text-info"><?php echo $vitalsData["heartRate"][0] ?? "--"; ?> <small>BPM</small></h5></div>
                         </div>
                         <?php if ($latestReading): ?>
                         <hr>
@@ -253,6 +251,23 @@ if (!$patientId) {
                         <div id="ecgPlots" style="max-height: 500px; overflow-y: auto;"></div>
                     </div>
                 </div>
+
+                <!-- AI Health Summary -->
+                <div class="card">
+                    <div class="header" style="background:linear-gradient(135deg,#00bcd4,#0097a7);color:#fff;">
+                        <h2><i class="zmdi zmdi-robot m-r-10"></i><strong>AI Health</strong> Summary</h2>
+                    </div>
+                    <div class="body">
+                        <div id="ai-summary-content">
+                            <div class="text-center p-t-20 p-b-20">
+                                <button class="btn btn-primary btn-round" id="generate-summary-btn" onclick="generateAISummary()">
+                                    <i class="zmdi zmdi-play-circle m-r-5"></i> Generate AI Health Summary
+                                </button>
+                                <p class="text-muted m-t-10" style="font-size:12px;">AI will analyze your ECG, vitals, and monitoring data to provide a comprehensive health overview.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -332,23 +347,19 @@ function resolveTask(taskID, status) {
 </script>
 <script>
 $(function(){
-    var spO2Points = [], hrPoints = [];
+    var hrPoints = [];
     <?php 
     $revDates = array_reverse($ecgDates);
-    $revSpO2 = array_reverse($vitalsData["SpO2"]);
     $revHR = array_reverse($vitalsData["heartRate"]);
     foreach($revDates as $i => $d) {
-        $s = $revSpO2[$i] ?? 0;
         $h = $revHR[$i] ?? 0;
-        echo "spO2Points.push({ label: \"$d\", y: $s });\n";
         echo "hrPoints.push({ label: \"$d\", y: $h });\n";
     }
     ?>
     var chart = new CanvasJS.Chart("vitalsTrendChart", {
         theme: "light2",
         title: { text: "Patient Trends" },
-        data: [{ type: "line", name: "SpO2 (%)", showInLegend: true, dataPoints: spO2Points },
-               { type: "line", name: "HR (BPM)", showInLegend: true, dataPoints: hrPoints }]
+        data: [{ type: "line", name: "HR (BPM)", showInLegend: true, dataPoints: hrPoints }]
     });
     chart.render();
 
@@ -408,6 +419,43 @@ document.getElementById('profile-img-input').addEventListener('change', function
         status.innerHTML = '<span class="text-danger">Network error</span>';
     });
 });
+
+// AI Health Summary
+function generateAISummary() {
+    var btn = document.getElementById('generate-summary-btn');
+    var content = document.getElementById('ai-summary-content');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="zmdi zmdi-spin zmdi-hc-spin m-r-5"></i> Analyzing your health data...';
+    
+    content.innerHTML = '<div class="text-center p-t-20 p-b-20"><div class="zmdi zmdi-spin zmdi-hc-spin" style="font-size:2rem;color:#00bcd4;"></div><p class="m-t-10 text-muted">AI is analyzing your ECG, vitals, HRV metrics, and monitoring history...</p><p class="text-muted" style="font-size:11px;">This may take 10-30 seconds</p></div>';
+    
+    fetch('../api/ai_health_summary.php?patientId=<?php echo urlencode($patientId); ?>', {
+        credentials: 'same-origin'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var riskClass = 'secondary';
+            if (data.risk_level === 'Low') riskClass = 'success';
+            else if (data.risk_level === 'Moderate') riskClass = 'warning';
+            else if (data.risk_level === 'High' || data.risk_level === 'Critical') riskClass = 'danger';
+            
+            var formattedSummary = data.summary
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n- /g, '</p><p class="m-l-10">• ')
+                .replace(/\n/g, '<br>');
+            
+            content.innerHTML = '<div class="m-b-15"><span class="badge badge-' + riskClass + '" style="font-size:13px;padding:6px 12px;"><i class="zmdi zmdi-shield m-r-5"></i>Risk Level: ' + data.risk_level + '</span></div><div style="line-height:1.8;font-size:14px;"><p>' + formattedSummary + '</p></div><hr><div class="text-right"><button class="btn btn-sm btn-default btn-round" onclick="generateAISummary()"><i class="zmdi zmdi-refresh m-r-5"></i>Refresh Summary</button></div>';
+        } else {
+            content.innerHTML = '<div class="alert alert-danger"><i class="zmdi zmdi-alert-circle m-r-5"></i>' + (data.message || 'Failed to generate summary') + '</div><button class="btn btn-sm btn-primary btn-round" onclick="generateAISummary()"><i class="zmdi zmdi-refresh m-r-5"></i>Try Again</button>';
+        }
+    })
+    .catch(function() {
+        content.innerHTML = '<div class="alert alert-danger"><i class="zmdi zmdi-wifi-off m-r-5"></i>Network error. Please check your connection and try again.</div><button class="btn btn-sm btn-primary btn-round" onclick="generateAISummary()"><i class="zmdi zmdi-refresh m-r-5"></i>Try Again</button>';
+    });
+}
 </script>
 </body>
 </html>
