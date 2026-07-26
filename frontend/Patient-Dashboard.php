@@ -75,6 +75,7 @@ try {
         </ul>
     </div>
 </nav>
+<?php include_once("ai_chat_widget.php"); ?>
 
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
@@ -90,7 +91,7 @@ try {
     </div>
     <div class="container-fluid">
         <div class="row clearfix">
-            <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="col-lg-6 col-md-6 col-sm-12">
                 <div class="card info-box-2 bg-blue">
                     <div class="body">
                         <div class="icon"><i class="zmdi zmdi-favorite"></i></div>
@@ -101,18 +102,7 @@ try {
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 col-sm-12">
-                <div class="card info-box-2 bg-green">
-                    <div class="body">
-                        <div class="icon"><i class="zmdi zmdi-brightness-low"></i></div>
-                        <div class="content">
-                            <div class="text">LATEST SpO2</div>
-                            <div class="number"><?php echo $readings[0]['SpO2'] ?? '--'; ?> <small>%</small></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12 col-sm-12">
+            <div class="col-lg-6 col-md-6 col-sm-12">
                 <div class="card info-box-2 bg-red">
                     <div class="body">
                         <div class="icon"><i class="zmdi zmdi-alert-triangle"></i></div>
