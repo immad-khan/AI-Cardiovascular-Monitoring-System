@@ -23,17 +23,28 @@ try {
 
     $conn->beginTransaction();
 
-    // Get DeviceID
-    $stmt = $conn->prepare('SELECT "deviceID" FROM monitoring_devices WHERE mac_address = ?');
+    // Get DeviceID & Session Status
+    $stmt = $conn->prepare('SELECT "deviceID", "patientID", COALESCE("is_monitoring", TRUE) as is_monitoring FROM monitoring_devices WHERE mac_address = ?');
     $stmt->execute([$mac]);
     $device = $stmt->fetch();
 
     if (!$device) {
-        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status) VALUES (?, 'Online') RETURNING \"deviceID\"");
+        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, is_monitoring) VALUES (?, 'Online', TRUE) RETURNING \"deviceID\", \"patientID\", \"is_monitoring\"");
         $stmt->execute([$mac]);
         $device = $stmt->fetch();
     }
     $deviceID = $device["deviceID"];
+    $patientID = $device["patientID"];
+    $is_monitoring = (bool)$device["is_monitoring"];
+
+    // If monitoring session is turned OFF by patient, skip saving junk idle readings
+    if (!$is_monitoring) {
+        echo json_encode([
+            "status" => "ignored",
+            "message" => "Monitoring session is inactive for this device. Turn on session from patient dashboard to record readings."
+        ]);
+        exit();
+    }
 
     // --- AI Inference Block ---
     $ai_prediction = null;
@@ -65,11 +76,11 @@ try {
         }
     }
 
-    // Insert Vitals (including new HRV + signal quality fields)
+    // Insert Vitals (including historical patientID lock)
     $stmt = $conn->prepare('INSERT INTO vital_sign_readings 
-        ("deviceID", "heartRate", "RespirationImpedance", device_type, final_prediction, "confidenceScore", hrv_sdnn, hrv_rmssd, signal_quality, arrhythmia_flags) 
-        VALUES (?, ?, ?, \'Raspberry Pi 4\', ?, ?, ?, ?, ?, ?) RETURNING "readingID"');
-    $stmt->execute([$deviceID, $hr, $resp, $ai_prediction, $confidence, $hrv_sdnn, $hrv_rmssd, $signal_quality, $arrhythmia_flags]);
+        ("deviceID", "patientID", "heartRate", "RespirationImpedance", device_type, final_prediction, "confidenceScore", hrv_sdnn, hrv_rmssd, signal_quality, arrhythmia_flags) 
+        VALUES (?, ?, ?, ?, \'Raspberry Pi 4\', ?, ?, ?, ?, ?, ?) RETURNING "readingID"');
+    $stmt->execute([$deviceID, $patientID, $hr, $resp, $ai_prediction, $confidence, $hrv_sdnn, $hrv_rmssd, $signal_quality, $arrhythmia_flags]);
     $reading = $stmt->fetch();
     $readingID = $reading["readingID"];
 

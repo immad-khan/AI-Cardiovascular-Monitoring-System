@@ -24,15 +24,15 @@ try {
 
     $vitals_query = "SELECT vr.*, md.model
                     FROM vital_sign_readings vr
-                    JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
-                    WHERE md.\"patientID\" = ?
+                    LEFT JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
+                    WHERE vr.\"patientID\" = ? OR (vr.\"patientID\" IS NULL AND md.\"patientID\" = ?)
                     ORDER BY vr.timestamp DESC LIMIT 15";
     $stmt = $conn->prepare($vitals_query);
-    $stmt->execute([$patientId]);
+    $stmt->execute([$patientId, $patientId]);
     $readings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $alert_query = "SELECT a.* FROM \"CRITICAL_ALERT\" a
-                   JOIN monitoring_devices md ON a.\"deviceID\" = md.\"deviceID\"
+                   LEFT JOIN monitoring_devices md ON a.\"deviceID\" = md.\"deviceID\"
                    WHERE md.\"patientID\" = ? ORDER BY a.timestamp DESC LIMIT 5";
     $stmt = $conn->prepare($alert_query);
     $stmt->execute([$patientId]);
@@ -92,6 +92,22 @@ $latest = $readings[0] ?? null;
         </div>
     </div>
     <div class="container-fluid">
+        <!-- Monitoring Session Control Banner -->
+        <div class="card p-3 mb-4" style="background: #ffffff; border-left: 5px solid #1565c0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="session-indicator" style="width: 14px; height: 14px; border-radius: 50%; background-color: #28a745; box-shadow: 0 0 8px #28a745;"></div>
+                    <div>
+                        <h5 class="m-0 font-weight-bold" id="session-status-text">ECG Monitoring Session Active</h5>
+                        <small class="text-muted">Turn session ON when electrodes are connected to record vitals. Turn OFF when disconnected to prevent recording idle noise.</small>
+                    </div>
+                </div>
+                <button id="toggle-session-btn" onclick="toggleSession()" class="btn btn-danger btn-round waves-effect px-4" style="font-weight:600;">
+                    <i class="zmdi zmdi-power m-r-5"></i> Stop Monitoring Session
+                </button>
+            </div>
+        </div>
+
         <!-- Vitals Stat Cards -->
         <div class="row clearfix">
             <div class="col-lg-3 col-md-6 col-sm-6">
@@ -224,7 +240,56 @@ window.onload = function () {
         }]
     });
     chart.render();
+};
+
+function checkSessionStatus() {
+    fetch('../api/toggle_session.php?action=status')
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            updateSessionUI(data.is_monitoring);
+        }
+    });
 }
+
+function toggleSession() {
+    var btn = document.getElementById('toggle-session-btn');
+    btn.disabled = true;
+    fetch('../api/toggle_session.php?action=toggle')
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        if(data.success) {
+            updateSessionUI(data.is_monitoring);
+            alert(data.message);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(() => { btn.disabled = false; });
+}
+
+function updateSessionUI(isMonitoring) {
+    var indicator = document.getElementById('session-indicator');
+    var text = document.getElementById('session-status-text');
+    var btn = document.getElementById('toggle-session-btn');
+    
+    if(isMonitoring) {
+        indicator.style.backgroundColor = '#28a745';
+        indicator.style.boxShadow = '0 0 8px #28a745';
+        text.innerText = 'ECG Monitoring Session Active';
+        btn.className = 'btn btn-danger btn-round waves-effect px-4';
+        btn.innerHTML = '<i class="zmdi zmdi-power m-r-5"></i> Stop Monitoring Session';
+    } else {
+        indicator.style.backgroundColor = '#dc3545';
+        indicator.style.boxShadow = '0 0 8px #dc3545';
+        text.innerText = 'ECG Monitoring Session Stopped (Idle)';
+        btn.className = 'btn btn-success btn-round waves-effect px-4';
+        btn.innerHTML = '<i class="zmdi zmdi-play m-r-5"></i> Start Monitoring Session';
+    }
+}
+
+checkSessionStatus();
 </script>
 </body>
 </html>

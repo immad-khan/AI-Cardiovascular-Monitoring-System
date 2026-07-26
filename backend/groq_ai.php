@@ -92,11 +92,11 @@ function buildPatientContext($conn, $patientId) {
                    vr.final_prediction, vr."confidenceScore", vr.hrv_sdnn, vr.hrv_rmssd, 
                    vr.signal_quality, vr.arrhythmia_flags
             FROM vital_sign_readings vr
-            JOIN monitoring_devices md ON vr."deviceID" = md."deviceID"
-            WHERE md."patientID" = ?
+            LEFT JOIN monitoring_devices md ON vr."deviceID" = md."deviceID"
+            WHERE vr."patientID" = ? OR (vr."patientID" IS NULL AND md."patientID" = ?)
             ORDER BY vr.timestamp DESC LIMIT 20
         ');
-        $stmt->execute([$patientId]);
+        $stmt->execute([$patientId, $patientId]);
         $context['readings'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         $context['readings'] = [];
@@ -109,12 +109,12 @@ function buildPatientContext($conn, $patientId) {
             FROM \"AI_PREDICTION_LOG\"
             WHERE \"readingID\" IN (
                 SELECT vr.\"readingID\" FROM vital_sign_readings vr
-                JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
-                WHERE md.\"patientID\" = ?
+                LEFT JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
+                WHERE vr.\"patientID\" = ? OR (vr.\"patientID\" IS NULL AND md.\"patientID\" = ?)
             )
             ORDER BY timestamp DESC LIMIT 15
         ");
-        $stmt->execute([$patientId]);
+        $stmt->execute([$patientId, $patientId]);
         $context['ai_predictions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         $context['ai_predictions'] = [];

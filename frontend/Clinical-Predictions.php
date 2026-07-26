@@ -11,12 +11,12 @@ if (!isset($_SESSION["user_type"]) || ($_SESSION["user_type"] !== "admin" && $_S
 $doctorID = $_SESSION["user_id"];
 
 try {
-    // 1. Fetch AI Prediction History joined with Patient Data
-    $sql = "SELECT apl.*, p.name as patient_name, vr.timestamp as reading_time, md.model as device_model
+    // 1. Fetch AI Prediction History joined with Patient Data (respecting historical reading patientID lock)
+    $sql = "SELECT apl.*, COALESCE(p.name, 'Unassigned') as patient_name, vr.timestamp as reading_time, COALESCE(md.model, 'Raspberry Pi 4') as device_model
             FROM \"AI_PREDICTION_LOG\" apl
             JOIN vital_sign_readings vr ON apl.\"readingID\" = vr.\"readingID\"
-            JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
-            JOIN patients p ON md.\"patientID\" = p.\"patientID\" ";
+            LEFT JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
+            LEFT JOIN patients p ON (vr.\"patientID\" = p.\"patientID\" OR (vr.\"patientID\" IS NULL AND md.\"patientID\" = p.\"patientID\")) ";
     
     // Filter for specific doctor if they aren't admin
     if ($_SESSION["user_type"] === "doctor") {

@@ -25,11 +25,11 @@ try {
     // 2. Fetch Vitals & ECG
     $vitals_query = "SELECT vr.*, md.mac_address
                     FROM vital_sign_readings vr
-                    JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
-                    WHERE md.\"patientID\" = ?
+                    LEFT JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
+                    WHERE vr.\"patientID\" = ? OR (vr.\"patientID\" IS NULL AND md.\"patientID\" = ?)
                     ORDER BY vr.timestamp DESC LIMIT 20";
     $stmt = $conn->prepare($vitals_query);
-    $stmt->execute([$patientId]);
+    $stmt->execute([$patientId, $patientId]);
     $readings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $vitalsData = ["heartRate" => [], "Respiration" => []];
