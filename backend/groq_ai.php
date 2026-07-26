@@ -87,15 +87,15 @@ function buildPatientContext($conn, $patientId) {
 
     // Latest vitals readings (last 20)
     try {
-        $stmt = $conn->prepare("
-            SELECT vr.timestamp, vr.heartRate, vr.SpO2, vr.RespirationImpedance, 
-                   vr.final_prediction, vr.\"confidenceScore\", vr.hrv_sdnn, vr.hrv_rmssd, 
+        $stmt = $conn->prepare('
+            SELECT vr.timestamp, vr."heartRate", vr."RespirationImpedance", 
+                   vr.final_prediction, vr."confidenceScore", vr.hrv_sdnn, vr.hrv_rmssd, 
                    vr.signal_quality, vr.arrhythmia_flags
             FROM vital_sign_readings vr
-            JOIN monitoring_devices md ON vr.\"deviceID\" = md.\"deviceID\"
-            WHERE md.\"patientID\" = ?
+            JOIN monitoring_devices md ON vr."deviceID" = md."deviceID"
+            WHERE md."patientID" = ?
             ORDER BY vr.timestamp DESC LIMIT 20
-        ");
+        ');
         $stmt->execute([$patientId]);
         $context['readings'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
@@ -166,7 +166,6 @@ function formatContextForPrompt($context) {
         foreach ($context['readings'] as $r) {
             $date = $r['timestamp'];
             $hr = $r['heartRate'] ?? 'N/A';
-            $spo2 = $r['SpO2'] ?? 'N/A';
             $resp = $r['RespirationImpedance'] ?? 'N/A';
             $pred = $r['final_prediction'] ?? 'N/A';
             $conf = isset($r['confidenceScore']) ? round($r['confidenceScore'] * 100, 1) . '%' : 'N/A';
@@ -174,7 +173,7 @@ function formatContextForPrompt($context) {
             $rmssd = $r['hrv_rmssd'] !== null ? round($r['hrv_rmssd'], 1) . 'ms' : 'N/A';
             $sqi = $r['signal_quality'] ?? 'N/A';
             $flags = $r['arrhythmia_flags'] ?? 'None';
-            $readingsStr .= "  [$date] HR: {$hr} BPM, SpO2: {$spo2}%, Resp: {$resp}, AI Prediction: {$pred} (Conf: {$conf}), HRV SDNN: {$sdnn}, RMSSD: {$rmssd}, SQI: {$sqi}, Flags: {$flags}\n";
+            $readingsStr .= "  [$date] HR: {$hr} BPM, Resp: {$resp}, AI Prediction: {$pred} (Conf: {$conf}), HRV SDNN: {$sdnn}, RMSSD: {$rmssd}, SQI: {$sqi}, Flags: {$flags}\n";
         }
         $parts[] = $readingsStr;
     }

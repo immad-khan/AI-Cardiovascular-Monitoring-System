@@ -77,12 +77,18 @@ try {
     if ($ecg_raw) {
         $samples = json_decode($ecg_raw, true);
         if (!$samples) $samples = explode(',', $ecg_raw);
-        if (is_array($samples)) {
-            $sample_stmt = $conn->prepare('INSERT INTO esp_ecg_data ("readingID", ecg_value) VALUES (?, ?)');
-            foreach (array_slice($samples, 0, 500) as $val) {
-                $float_val = (float) trim($val);
-                $sample_stmt->execute([$readingID, $float_val]);
+        if (is_array($samples) && !empty($samples)) {
+            $slice = array_slice($samples, 0, 500);
+            $placeholders = [];
+            $params = [];
+            foreach ($slice as $val) {
+                $placeholders[] = '(?, ?)';
+                $params[] = $readingID;
+                $params[] = (float) trim($val);
             }
+            $sql = 'INSERT INTO esp_ecg_data ("readingID", ecg_value) VALUES ' . implode(', ', $placeholders);
+            $sample_stmt = $conn->prepare($sql);
+            $sample_stmt->execute($params);
         }
     }
 
