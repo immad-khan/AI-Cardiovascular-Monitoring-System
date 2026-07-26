@@ -93,18 +93,20 @@ $latest = $readings[0] ?? null;
     </div>
     <div class="container-fluid">
         <!-- Monitoring Session Control Banner -->
-        <div class="card p-3 mb-4" style="background: #ffffff; border-left: 5px solid #1565c0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div id="session-indicator" style="width: 14px; height: 14px; border-radius: 50%; background-color: #28a745; box-shadow: 0 0 8px #28a745;"></div>
+        <div class="card p-3 m-b-20" id="session-card" style="background: #ffffff; border-left: 5px solid #dc3545; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div class="row align-items-center">
+                <div class="col-md-8 col-sm-12 d-flex align-items-center" style="display:flex; align-items:center;">
+                    <div id="session-indicator" style="width: 14px; height: 14px; min-width: 14px; border-radius: 50%; background-color: #dc3545; box-shadow: 0 0 8px #dc3545; margin-right: 15px;"></div>
                     <div>
-                        <h5 class="m-0 font-weight-bold" id="session-status-text">ECG Monitoring Session Active</h5>
-                        <small class="text-muted">Turn session ON when electrodes are connected to record vitals. Turn OFF when disconnected to prevent recording idle noise.</small>
+                        <h5 class="m-t-0 m-b-5" id="session-status-text" style="font-weight: 700; color: #222;">ECG Monitoring Session Stopped (Idle)</h5>
+                        <small class="text-muted" style="display:block; line-height:1.4;">Turn session ON when electrodes are connected to record vitals. Turn OFF when disconnected to prevent recording idle noise.</small>
                     </div>
                 </div>
-                <button id="toggle-session-btn" onclick="toggleSession()" class="btn btn-danger btn-round waves-effect px-4" style="font-weight:600;">
-                    <i class="zmdi zmdi-power m-r-5"></i> Stop Monitoring Session
-                </button>
+                <div class="col-md-4 col-sm-12 text-md-right m-t-10 m-md-t-0" style="text-align: right;">
+                    <button id="toggle-session-btn" onclick="toggleSession()" class="btn btn-success btn-round waves-effect px-4" style="font-weight:600; padding: 10px 24px;">
+                        <i class="zmdi zmdi-play m-r-5"></i> Start Monitoring Session
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -113,14 +115,14 @@ $latest = $readings[0] ?? null;
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card dash-stat" style="background:linear-gradient(135deg,#e53935,#c62828);color:#fff;">
                     <i class="zmdi zmdi-favorite"></i>
-                    <h3><?php echo $latest['heartRate'] ?? '--'; ?> <small style="color:rgba(255,255,255,0.8);">BPM</small></h3>
+                    <h3><?php echo ($latest && isset($latest['heartRate'])) ? $latest['heartRate'] : '--'; ?> <small style="color:rgba(255,255,255,0.8);">BPM</small></h3>
                     <small style="color:rgba(255,255,255,0.7);">Heart Rate</small>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card dash-stat" style="background:linear-gradient(135deg,#1e88e5,#1565c0);color:#fff;">
                     <i class="zmdi zmdi-chart-line"></i>
-                    <h3><?php echo $latest['hrv_sdnn'] !== null ? round($latest['hrv_sdnn'],0) : '--'; ?> <small style="color:rgba(255,255,255,0.8);">ms</small></h3>
+                    <h3><?php echo ($latest && isset($latest['hrv_sdnn']) && $latest['hrv_sdnn'] !== null) ? round($latest['hrv_sdnn'],0) : '--'; ?> <small style="color:rgba(255,255,255,0.8);">ms</small></h3>
                     <small style="color:rgba(255,255,255,0.7);">HRV (SDNN)</small>
                 </div>
             </div>
@@ -270,21 +272,26 @@ function toggleSession() {
 }
 
 function updateSessionUI(isMonitoring) {
+    var card = document.getElementById('session-card');
     var indicator = document.getElementById('session-indicator');
     var text = document.getElementById('session-status-text');
     var btn = document.getElementById('toggle-session-btn');
     
     if(isMonitoring) {
+        if(card) card.style.borderLeftColor = '#28a745';
         indicator.style.backgroundColor = '#28a745';
         indicator.style.boxShadow = '0 0 8px #28a745';
         text.innerText = 'ECG Monitoring Session Active';
         btn.className = 'btn btn-danger btn-round waves-effect px-4';
+        btn.style.padding = '10px 24px';
         btn.innerHTML = '<i class="zmdi zmdi-power m-r-5"></i> Stop Monitoring Session';
     } else {
+        if(card) card.style.borderLeftColor = '#dc3545';
         indicator.style.backgroundColor = '#dc3545';
         indicator.style.boxShadow = '0 0 8px #dc3545';
         text.innerText = 'ECG Monitoring Session Stopped (Idle)';
         btn.className = 'btn btn-success btn-round waves-effect px-4';
+        btn.style.padding = '10px 24px';
         btn.innerHTML = '<i class="zmdi zmdi-play m-r-5"></i> Start Monitoring Session';
     }
 }

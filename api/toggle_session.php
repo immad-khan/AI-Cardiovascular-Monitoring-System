@@ -23,13 +23,32 @@ try {
         exit();
     }
 
-    // 2. Get patient's assigned monitoring device
-    $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", TRUE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ?');
+    // 2. Get patient's assigned monitoring device (default session is OFF / FALSE)
+    $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ?');
     $stmt->execute([$patientID]);
     $device = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Fallback: If device not linked directly in monitoring_devices, link patient's latest reading device or primary device
     if (!$device) {
-        echo json_encode(['success' => false, 'message' => 'No active monitoring device assigned to your account.']);
+        $stmt = $conn->prepare('SELECT "deviceID" FROM vital_sign_readings WHERE "patientID" = ? ORDER BY timestamp DESC LIMIT 1');
+        $stmt->execute([$patientID]);
+        $deviceID = $stmt->fetchColumn();
+        
+        if (!$deviceID) {
+            $stmt = $conn->query('SELECT "deviceID" FROM monitoring_devices ORDER BY "deviceID" ASC LIMIT 1');
+            $deviceID = $stmt->fetchColumn();
+        }
+
+        if ($deviceID) {
+            $conn->prepare('UPDATE monitoring_devices SET "patientID" = ? WHERE "deviceID" = ?')->execute([$patientID, $deviceID]);
+            $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ?');
+            $stmt->execute([$patientID]);
+            $device = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+    }
+
+    if (!$device) {
+        echo json_encode(['success' => false, 'message' => 'No monitoring device assigned to your account.']);
         exit();
     }
 

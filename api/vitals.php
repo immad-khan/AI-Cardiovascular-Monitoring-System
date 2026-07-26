@@ -23,13 +23,13 @@ try {
 
     $conn->beginTransaction();
 
-    // Get DeviceID & Session Status
-    $stmt = $conn->prepare('SELECT "deviceID", "patientID", COALESCE("is_monitoring", TRUE) as is_monitoring FROM monitoring_devices WHERE mac_address = ?');
+    // Get DeviceID & Session Status (defaults to FALSE / Session OFF)
+    $stmt = $conn->prepare('SELECT "deviceID", "patientID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE mac_address = ?');
     $stmt->execute([$mac]);
     $device = $stmt->fetch();
 
     if (!$device) {
-        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, is_monitoring) VALUES (?, 'Online', TRUE) RETURNING \"deviceID\", \"patientID\", \"is_monitoring\"");
+        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, is_monitoring) VALUES (?, 'Online', FALSE) RETURNING \"deviceID\", \"patientID\", \"is_monitoring\"");
         $stmt->execute([$mac]);
         $device = $stmt->fetch();
     }
