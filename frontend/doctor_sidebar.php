@@ -56,5 +56,9 @@ try {
                 <span>IoT Device Monitor</span>
             </a>
         </li>
+        <li class="header">COMMUNICATION</li>
+        <li class="<?php echo in_array(basename($_SERVER['PHP_SELF']), ['Doctor-Chats.php', 'Doctor-Chat.php']) ? 'active open' : ''; ?>">
+            <a href="Doctor-Chats.php"><i class="zmdi zmdi-comments"></i><span>Patient Chats</span></a>
+        </li>
     </ul>
 </div>

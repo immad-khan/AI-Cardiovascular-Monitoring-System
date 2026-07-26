@@ -34,6 +34,9 @@
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-AI-Assistant.php') ? 'active open' : ''; ?>">
             <a href="Patient-AI-Assistant.php"><i class="zmdi zmdi-robot"></i><span>AI Assistant</span></a>
         </li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-Chat.php') ? 'active open' : ''; ?>">
+            <a href="Patient-Chat.php"><i class="zmdi zmdi-comments"></i><span>My Doctor</span></a>
+        </li>
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Patient-MyProfile.php') ? 'active open' : ''; ?>">
             <a href="Patient-MyProfile.php"><i class="zmdi zmdi-account-circle"></i><span>My Profile</span></a>
         </li>

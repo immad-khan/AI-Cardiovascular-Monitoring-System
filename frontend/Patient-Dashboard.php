@@ -78,7 +78,6 @@ $latest = $readings[0] ?? null;
         </ul>
     </div>
 </nav>
-<?php include_once("ai_chat_widget.php"); ?>
 
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
