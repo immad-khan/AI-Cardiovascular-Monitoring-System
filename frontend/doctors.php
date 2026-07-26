@@ -84,6 +84,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                                             <a href="doctor-profile.php?id=' . $row['userID'] . '" class="btn btn-primary btn-round btn-simple">View Profile</a>
                                             <a href="edit-doctor.php?id=' . $row['userID'] . '" class="btn btn-info btn-round btn-simple">Edit</a>
                                             <a href="delete-doctor.php?id=' . $row['userID'] . '" class="btn btn-danger btn-round btn-simple" onclick="return confirm(\'Are you sure you want to delete this doctor account?\')">Delete</a>
+                                            <button class="btn btn-warning btn-round btn-simple" onclick="openPasswordModal(\'' . $row['userID'] . '\', \'' . htmlspecialchars(addslashes($row['email'])) . '\', \'doctor\', \'' . htmlspecialchars(addslashes($row['full_name'])) . '\')">Change Password</button>
                                         </div>
                                     </div>
                                 </div>
@@ -105,10 +106,93 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
 <script src="../assets/bundles/vendorscripts.bundle.js"></script>
 <script src="../assets/bundles/mainscripts.bundle.js"></script>
 <script>
-    // Hide loader
     $(window).on('load', function() {
         $('.page-loader-wrapper').fadeOut();
     });
+
+    function openPasswordModal(entityId, entityEmail, entityType, entityName) {
+        document.getElementById('pw-entity-id').value = entityId;
+        document.getElementById('pw-entity-email').value = entityEmail;
+        document.getElementById('pw-entity-type').value = entityType;
+        document.getElementById('pw-entity-name').textContent = entityName + ' (' + entityEmail + ')';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+        document.getElementById('pw-error').style.display = 'none';
+        document.getElementById('pw-success').style.display = 'none';
+        $('#passwordModal').modal('show');
+    }
+
+    function submitPasswordChange() {
+        var pw = document.getElementById('new-password').value;
+        var cpw = document.getElementById('confirm-password').value;
+        var errEl = document.getElementById('pw-error');
+        var sucEl = document.getElementById('pw-success');
+        errEl.style.display = 'none';
+        sucEl.style.display = 'none';
+
+        if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+        if (pw !== cpw) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+
+        fetch('../api/admin_change_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                entity_id: document.getElementById('pw-entity-id').value,
+                entity_email: document.getElementById('pw-entity-email').value,
+                entity_type: document.getElementById('pw-entity-type').value,
+                new_password: pw
+            }),
+            credentials: 'same-origin'
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                sucEl.textContent = 'Password updated successfully. Email notification sent.';
+                sucEl.style.display = 'block';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-password').value = '';
+            } else {
+                errEl.textContent = data.message || 'Failed to update password.';
+                errEl.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            errEl.textContent = 'Network error. Please try again.';
+            errEl.style.display = 'block';
+        });
+    }
 </script>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden;">
+            <div class="modal-header" style="background:#ff9800;color:#fff;border:none;">
+                <h5 class="modal-title"><i class="zmdi zmdi-lock m-r-5"></i> Change Password</h5>
+                <button type="button" class="close" style="color:#fff;opacity:0.8;" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" style="padding:25px;">
+                <p class="text-muted" style="font-size:13px;">Set a new password for <strong id="pw-entity-name"></strong>. The new password will be sent to their email.</p>
+                <input type="hidden" id="pw-entity-id">
+                <input type="hidden" id="pw-entity-email">
+                <input type="hidden" id="pw-entity-type">
+                <div class="form-group">
+                    <label class="font-weight-bold">New Password</label>
+                    <input type="password" class="form-control" id="new-password" placeholder="Enter new password" style="border-radius:8px;">
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-bold">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password" style="border-radius:8px;">
+                </div>
+                <div id="pw-error" class="text-danger" style="display:none;font-size:13px;"></div>
+                <div id="pw-success" class="text-success" style="display:none;font-size:13px;"></div>
+            </div>
+            <div class="modal-footer" style="border:none;justify-content:center;padding-bottom:20px;">
+                <button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning btn-round" onclick="submitPasswordChange()">Update Password</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
