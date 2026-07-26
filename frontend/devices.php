@@ -202,11 +202,9 @@ if (!isset($_SESSION['user_type']) || ($_SESSION['user_type'] !== 'admin' && $_S
 
                     <div class="modern-form-group">
                         <label class="custom-label">Device Status</label>
-                        <select name="status" id="edit_status" class="modern-input">
-                            <option value="Online">Online (Gateway Active)</option>
-                            <option value="Offline">Offline (Inactive)</option>
-                            <option value="Assigned">Assigned (Awaiting Sync)</option>
-                        </select>
+                        <input type="text" id="edit_status_display" class="modern-input" readonly style="background:#eee;border:none;" placeholder="Auto-managed by system">
+                        <input type="hidden" name="status" id="edit_status">
+                        <small class="text-muted">Status is automatically updated when the device sends data.</small>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-3 bg-light">
@@ -231,6 +229,7 @@ $(document).ready(function() {
         $('#edit_device_id').val(data.id);
         $('#edit_mac').val(data.mac);
         $('#edit_status').val(data.status);
+        $('#edit_status_display').val(data.status);
         $('#edit_patient_id').val(data.patient);
         $('#editDeviceModal').modal('show');
     });
