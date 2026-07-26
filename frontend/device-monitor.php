@@ -144,7 +144,7 @@ if (!isset($_SESSION['user_type']) || !in_array($_SESSION['user_type'], ['admin'
 
         <!-- Devices Grid -->
         <div class="row clearfix">
-            <div class="col-lg-8 col-md-12">
+            <div class="col-lg-12 col-md-12">
                 <div class="card">
                     <div class="header">
                         <h2><strong>Registered</strong> IoT Devices</h2>
@@ -158,40 +158,11 @@ if (!isset($_SESSION['user_type']) || !in_array($_SESSION['user_type'], ['admin'
                 </div>
             </div>
 
-            <!-- Pipeline Setup Guide -->
-            <div class="col-lg-4 col-md-12">
-                <div class="card">
-                    <div class="header">
-                        <h2><strong>Pipeline</strong> Setup Guide</h2>
-                    </div>
-                    <div class="body">
-                        <ul class="list-unstyled">
-                            <li class="m-b-15">
-                                <span class="badge badge-primary stat-pill">Step 1</span>
-                                <p class="m-t-5 m-b-0"><strong>ESP32 → Raspberry Pi</strong></p>
-                                <small class="text-muted">ESP32 sends ECG JSON via USB Serial (115200 baud)</small>
-                            </li>
-                            <li class="m-b-15">
-                                <span class="badge badge-info stat-pill">Step 2</span>
-                                <p class="m-t-5 m-b-0"><strong>Pi runs ecg_forwarder.py</strong></p>
-                                <small class="text-muted">SSH into Pi and run:<br>
-                                <code style="background:#f5f5f5;padding:2px 6px;">python3 ecg_forwarder.py</code></small>
-                            </li>
-                            <li class="m-b-15">
-                                <span class="badge badge-warning stat-pill">Step 3</span>
-                                <p class="m-t-5 m-b-0"><strong>Pi → Azure API</strong></p>
-                                <small class="text-muted">Script POSTs ECG data to<br><code style="font-size:10px;">api/vitals.php</code> on Azure</small>
-                            </li>
-                            <li class="m-b-15">
-                                <span class="badge badge-success stat-pill">Step 4</span>
-                                <p class="m-t-5 m-b-0"><strong>AI Model runs → DB saved</strong></p>
-                                <small class="text-muted">Azure runs predict.py, stores result, triggers task if abnormal</small>
-                            </li>
-                        </ul>
-                        <hr>
-                        <p class="text-muted" style="font-size:12px;"><strong>Pi MAC Address</strong> is auto-detected as the device identifier. Make sure the Pi is linked to a patient in <a href="add-patient.php">Add Patient</a>.</p>
-                    </div>
-                </div>
+            </div>
+        </div>
+
+        <div class="row clearfix">
+            <div class="col-lg-12 col-md-12">
 
                 <!-- Live Activity Log -->
                 <div class="card">
@@ -247,7 +218,7 @@ function renderDevices(devices) {
 
     var html = '<table class="table table-hover m-b-0"><thead><tr>' +
         '<th>Status</th><th>MAC / Device</th><th>Patient</th>' +
-        '<th>HR</th><th>SpO2</th><th>AI Result</th><th>Last Seen</th><th></th>' +
+        '<th>HR</th><th>AI Result</th><th>Last Seen</th><th></th>' +
         '</tr></thead><tbody>';
 
     devices.forEach(function(d) {
@@ -260,7 +231,6 @@ function renderDevices(devices) {
             : '<span class="text-warning">⚠ Unlinked</span>';
 
         var hr  = d.heartRate ? d.heartRate + ' <small>BPM</small>' : '--';
-        var spo = d.SpO2 ? d.SpO2 + '<small>%</small>' : '--';
         var pred = d.final_prediction
             ? '<span class="badge badge-' + predBadgeClass(d.final_prediction) + ' prediction-badge">' + d.final_prediction + '</span>'
             : '<span class="text-muted">--</span>';
@@ -271,7 +241,6 @@ function renderDevices(devices) {
               '<small class="text-muted">' + (d.model || 'Raspberry Pi') + '</small></td>' +
             '<td>' + patient + '</td>' +
             '<td>' + hr + '</td>' +
-            '<td>' + spo + '</td>' +
             '<td>' + pred + '</td>' +
             '<td><small class="text-muted">' + timeSince(d.last_seen) + '</small></td>' +
             '<td>' + (d.patientID ? '<a href="Patient-Profile.php?patientId=' + encodeURIComponent(d.patientID) + '" class="btn btn-xs btn-info btn-round">View</a>' : '') + '</td>' +

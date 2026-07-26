@@ -47,3 +47,4 @@ $alert_count = count($active_alerts);
 			<a href="#" class="mega-menu" data-close="true"> <?php echo strtoupper($_SESSION['username']) ." (".strtoupper($_SESSION['user_type']).")" ?></a>
         </li>
     </ul>
+<?php include_once("ai_chat_widget.php"); ?>
