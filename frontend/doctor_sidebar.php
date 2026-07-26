@@ -60,5 +60,8 @@ try {
         <li class="<?php echo in_array(basename($_SERVER['PHP_SELF']), ['Doctor-Chats.php', 'Doctor-Chat.php']) ? 'active open' : ''; ?>">
             <a href="Doctor-Chats.php"><i class="zmdi zmdi-comments"></i><span>Patient Chats</span></a>
         </li>
+        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Doctor-MyProfile.php') ? 'active open' : ''; ?>">
+            <a href="Doctor-MyProfile.php"><i class="zmdi zmdi-account-circle"></i><span>My Profile</span></a>
+        </li>
     </ul>
 </div>
