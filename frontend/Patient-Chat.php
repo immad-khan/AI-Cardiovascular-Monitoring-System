@@ -48,12 +48,15 @@ $pageTitle = 'Doctor Chat — DigiHealth';
 function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html class="no-js" lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><?php echo e($pageTitle); ?></title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/color_skins.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet" />
@@ -64,13 +67,17 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
       --pale: #eff6f3; --line: #dce9e5;
       --bg: #f8fbfa;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: 'DM Sans', Arial, sans-serif; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
-    button, input { font: inherit; border: 0; outline: 0; }
-    button { cursor: pointer; background: none; }
-    a { color: inherit; text-decoration: none; }
+    body.theme-cyan .content { margin-top: 0 !important; height: 100vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+    body.theme-cyan section.content::before { display: none !important; }
+    body.theme-cyan .sidebar { top: 0 !important; }
 
-    .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    /* Scope original resets to .app-wrapper */
+    .app-wrapper { display: flex; flex: 1; flex-direction: column; min-height: 0; font-family: 'DM Sans', Arial, sans-serif; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+    .app-wrapper button, .app-wrapper input { font: inherit; border: 0; outline: 0; }
+    .app-wrapper button { cursor: pointer; background: none; }
+    .app-wrapper a { color: inherit; text-decoration: none; }
+
+    .app { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
     /* Top bar */
     .topbar {
@@ -231,7 +238,14 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
     }
   </style>
 </head>
-<body>
+<body class="theme-cyan">
+
+<aside id="leftsidebar" class="sidebar">
+    <?php include("patient_sidebar.php") ?>
+</aside>
+
+<section class="content">
+<div class="app-wrapper">
 
 <div class="app">
 
@@ -491,5 +505,12 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
 })();
 </script>
 
+</div>
+</div>
+</section>
+
+<script src="../assets/bundles/libscripts.bundle.js"></script>
+<script src="../assets/bundles/vendorscripts.bundle.js"></script>
+<script src="../assets/bundles/mainscripts.bundle.js"></script>
 </body>
 </html>
