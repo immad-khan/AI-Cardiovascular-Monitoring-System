@@ -128,31 +128,30 @@ try {
                 <div class="card">
                     <div class="header"><h2><strong>Personal</strong> Information</h2></div>
                     <div class="body">
-                        <div class="info-label">Full Name</div>
-                        <div class="info-value"><?php echo htmlspecialchars($doctor['full_name']); ?></div>
-
-                        <div class="info-label">Specialization</div>
-                        <div class="info-value"><?php echo htmlspecialchars($doctor['specialization']); ?></div>
-
-                        <div class="info-label">Phone</div>
-                        <div class="info-value"><?php echo htmlspecialchars($doctor['phone_number']); ?></div>
-
-                        <?php if (!empty($doctor['website_url'])): ?>
-                        <div class="info-label">Website</div>
-                        <div class="info-value">
-                            <a href="<?php echo htmlspecialchars($doctor['website_url']); ?>" target="_blank" style="color:#1565c0;">
-                                <?php echo htmlspecialchars($doctor['website_url']); ?>
-                            </a>
+                        <div id="profile-edit-status" style="margin-bottom:12px;"></div>
+                        <div class="form-group">
+                            <label class="info-label" for="edit_full_name">Full Name</label>
+                            <input type="text" class="form-control" id="edit_full_name"
+                                   value="<?php echo htmlspecialchars($doctor['full_name']); ?>" required>
                         </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($doctor['description'])): ?>
-                        <hr>
-                        <div class="info-label">About</div>
-                        <div class="info-value" style="font-size:13px;line-height:1.6;">
-                            <?php echo nl2br(htmlspecialchars($doctor['description'])); ?>
+                        <div class="form-group">
+                            <label class="info-label" for="edit_specialization">Specialization</label>
+                            <input type="text" class="form-control" id="edit_specialization"
+                                   value="<?php echo htmlspecialchars($doctor['specialization']); ?>" required>
                         </div>
-                        <?php endif; ?>
+                        <div class="form-group">
+                            <label class="info-label" for="edit_phone">Phone</label>
+                            <input type="text" class="form-control" id="edit_phone"
+                                   value="<?php echo htmlspecialchars($doctor['phone_number']); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label class="info-label" for="edit_description">About</label>
+                            <textarea class="form-control no-resize" id="edit_description" rows="4"
+                                      placeholder="Tell patients about yourself..."><?php echo htmlspecialchars($doctor['description']); ?></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-round" id="saveProfileBtn" onclick="saveProfile()">
+                            <i class="zmdi zmdi-check m-r-5"></i>Save Changes
+                        </button>
                     </div>
                 </div>
             </div>
@@ -279,6 +278,51 @@ try {
 
 <script src="../assets/bundles/libscripts.bundle.js"></script>
 <script>
+function saveProfile() {
+    var status = document.getElementById('profile-edit-status');
+    var btn = document.getElementById('saveProfileBtn');
+    var data = {
+        full_name: document.getElementById('edit_full_name').value.trim(),
+        specialization: document.getElementById('edit_specialization').value.trim(),
+        phone_number: document.getElementById('edit_phone').value.trim(),
+        description: document.getElementById('edit_description').value.trim()
+    };
+
+    if (!data.full_name || !data.specialization) {
+        status.innerHTML = '<div class="alert alert-danger" style="padding:8px 12px;font-size:13px;">Name and specialization are required.</div>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin m-r-5"></i>Saving...';
+
+    fetch('../api/update_doctor_profile.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'same-origin'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (result.success) {
+            status.innerHTML = '<div class="alert alert-success" style="padding:8px 12px;font-size:13px;">' + result.message + '</div>';
+            // Update the cover name display
+            var nameParts = data.full_name.split(' ');
+            document.querySelector('.profile-cover h3').textContent = 'Dr. ' + data.full_name;
+        } else {
+            status.innerHTML = '<div class="alert alert-danger" style="padding:8px 12px;font-size:13px;">' + (result.message || 'Failed to save.') + '</div>';
+        }
+    })
+    .catch(function() {
+        status.innerHTML = '<div class="alert alert-danger" style="padding:8px 12px;font-size:13px;">Network error. Please try again.</div>';
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="zmdi zmdi-check m-r-5"></i>Save Changes';
+        setTimeout(function() { status.innerHTML = ''; }, 4000);
+    });
+}
+
 document.getElementById('doc-profile-input').addEventListener('change', function(e) {
     var file = e.target.files[0];
     if (!file) return;
