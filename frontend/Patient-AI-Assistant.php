@@ -16,13 +16,16 @@ try {
 } catch (PDOException $e) {}
 ?>
 <!doctype html>
-<html lang="en">
+<html class="no-js" lang="en">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 <title>AI Assistant - Digihealth</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/color_skins.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
 <style>
@@ -36,25 +39,27 @@ try {
   --navy: #1b3539;
   --bg: #f8fbfa;
 }
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin: 0;
-  min-width: 320px;
-  background: var(--bg);
-  color: var(--ink);
+
+body.theme-cyan .content { margin-top: 0 !important; height: 100vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+body.theme-cyan section.content::before { display: none !important; }
+body.theme-cyan .sidebar { top: 0 !important; }
+
+/* Remove global styling that conflicts with template */
+.app-wrapper {
+  display: flex; flex: 1; min-height: 0;
   font-family: 'DM Sans', Arial, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  color: var(--ink);
+  background: var(--bg);
 }
-button, input, textarea { font: inherit; }
-button { border: 0; cursor: pointer; background: none; }
-a { color: inherit; text-decoration: none; }
-button:focus-visible, a:focus-visible, input:focus-visible {
+
+.app-wrapper button, .app-wrapper input, .app-wrapper textarea { font: inherit; }
+.app-wrapper button { border: 0; cursor: pointer; background: none; }
+.app-wrapper a { color: inherit; text-decoration: none; }
+.app-wrapper button:focus-visible, .app-wrapper a:focus-visible, .app-wrapper input:focus-visible {
   outline: 3px solid rgba(36,196,187,.45);
   outline-offset: 3px;
 }
-em {
+.app-wrapper em {
   color: var(--teal);
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 500;
@@ -62,50 +67,7 @@ em {
 }
 
 /* LAYOUT */
-.app { display: flex; height: 100vh; height: 100svh; }
-.app-sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  background: var(--navy);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
 .app-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-/* NAV SIDEBAR (patient nav) */
-.nav-brand {
-  display: flex; align-items: center; gap: 10px;
-  padding: 20px 20px 16px; color: #fff;
-}
-.nav-brand-symbol { position: relative; display: inline-block; width: 22px; height: 22px; transform: rotate(45deg); }
-.nav-brand-symbol span { position: absolute; display: block; border: 2px solid currentColor; border-radius: 50% 0 50% 50%; }
-.nav-brand-symbol span:nth-child(1) { top: 0; left: 7px; width: 9px; height: 15px; }
-.nav-brand-symbol span:nth-child(2) { top: 7px; left: 0; width: 15px; height: 9px; }
-.nav-brand-symbol span:nth-child(3) { top: 4px; left: 4px; width: 12px; height: 12px; border-color: var(--bright-teal); border-radius: 50%; }
-.nav-brand-word { font-size: 17px; font-weight: 600; letter-spacing: -.04em; }
-
-.nav-list { list-style: none; margin: 0; padding: 8px 10px; flex: 1; }
-.nav-list li { margin-bottom: 2px; }
-.nav-list a {
-  display: flex; align-items: center; gap: 11px;
-  padding: 10px 14px; border-radius: 6px;
-  color: rgba(255,255,255,.65); font-size: 13px; font-weight: 500;
-  transition: background .2s, color .2s;
-}
-.nav-list a:hover { background: rgba(255,255,255,.08); color: #fff; }
-.nav-list a.active { background: rgba(36,196,187,.15); color: var(--bright-teal); }
-.nav-list a svg { flex-shrink: 0; }
-
-.nav-footer {
-  padding: 14px 20px; border-top: 1px solid rgba(255,255,255,.1);
-}
-.nav-footer a {
-  display: flex; align-items: center; gap: 10px;
-  color: #ff5252; font-size: 13px; font-weight: 500;
-  padding: 8px 0; transition: opacity .2s;
-}
-.nav-footer a:hover { opacity: .8; }
 
 /* TOPBAR */
 .topbar {
@@ -125,7 +87,7 @@ em {
   color: var(--ink); font-size: 12px; font-weight: 600;
   transition: color .2s, border-color .2s;
 }
-.back-link:hover { color: var(--teal); border-color: var(--teal); }
+.back-link:hover { color: var(--teal); border-color: var(--teal); text-decoration: none; }
 
 /* MAIN GRID */
 .main { display: grid; grid-template-columns: 300px 1fr; flex: 1; min-height: 0; }
@@ -200,7 +162,7 @@ em {
 /* DISCLAIMER + COMPOSER */
 .disclaimer {
   flex-shrink: 0; padding: 10px 36px; border-top: 1px solid var(--line);
-  background: #fdfefd; color: #8a9c9a; font-size: 11px; text-align: center;
+  background: #fdfefd; color: #8a9c9a; font-size: 11px; text-align: center; margin: 0;
 }
 .composer {
   flex-shrink: 0; display: flex; align-items: center; gap: 12px;
@@ -240,41 +202,16 @@ em {
 }
 </style>
 </head>
-<body>
-<div class="app">
+<body class="theme-cyan">
 
-  <!-- Patient nav sidebar -->
-  <nav class="app-sidebar">
-    <div class="nav-brand">
-      <span class="nav-brand-symbol" aria-hidden="true"><span></span><span></span><span></span></span>
-      <span class="nav-brand-word">digihealth</span>
-    </div>
-    <ul class="nav-list">
-      <li><a href="Patient-Dashboard.php">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Dashboard</a></li>
-      <li><a href="Patient-Profile.php">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/></svg>
-        My Health Profile</a></li>
-      <li><a href="Patient-AI-Assistant.php" class="active">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg>
-        AI Assistant</a></li>
-      <li><a href="Patient-Chat.php">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>
-        My Doctor</a></li>
-      <li><a href="Patient-MyProfile.php">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
-        My Profile</a></li>
-    </ul>
-    <div class="nav-footer">
-      <a href="logout.php">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout</a>
-    </div>
-  </nav>
+<aside id="leftsidebar" class="sidebar">
+    <?php include("patient_sidebar.php") ?>
+</aside>
+
+<section class="content">
+<div class="app-wrapper">
 
   <div class="app-body">
-
     <!-- Top bar -->
     <header class="topbar">
       <div class="topbar-title">
@@ -369,6 +306,11 @@ em {
     </div>
   </div>
 </div>
+</section>
+
+<script src="../assets/bundles/libscripts.bundle.js"></script>
+<script src="../assets/bundles/vendorscripts.bundle.js"></script>
+<script src="../assets/bundles/mainscripts.bundle.js"></script>
 
 <script>
 (function () {
