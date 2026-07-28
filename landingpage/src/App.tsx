@@ -9,6 +9,8 @@ type IconName =
   | 'chevron'
   | 'clock'
   | 'device'
+  | 'eye'
+  | 'eye-off'
   | 'heart'
   | 'lock'
   | 'message'
@@ -50,6 +52,10 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
       return <svg {...common}><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3.5 2" /></svg>;
     case 'device':
       return <svg {...common}><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" /></svg>;
+    case 'eye':
+      return <svg {...common}><path d="M1 12s4.5-8 11-8 11 8 11 8-4.5 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>;
+    case 'eye-off':
+      return <svg {...common}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>;
     case 'heart':
       return <svg {...common}><path d="M20.8 8.8c0 5-8.8 10-8.8 10s-8.8-5-8.8-10A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.8 2.5Z" /></svg>;
     case 'lock':
@@ -150,6 +156,8 @@ const initialSubscription: SubscriptionData = {
 
 /* ─── Sign-In View ─── */
 function SignInView({ onBack }: { onBack: () => void }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <main className="signin-page">
       <div className="signin-image" aria-hidden="true" />
@@ -185,8 +193,10 @@ function SignInView({ onBack }: { onBack: () => void }) {
             <span className="input-icon"><Icon name="user" size={18} /></span>
           </label>
           <label className="signin-input">
-            <input type="password" name="password" placeholder="Password" required />
-            <span className="input-icon"><Icon name="lock" size={18} /></span>
+            <input type={showPassword ? 'text' : 'password'} name="password" placeholder="Password" required />
+            <span className="input-icon input-icon-toggle" role="button" tabIndex={0} aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowPassword(v => !v); } }}>
+              <Icon name={showPassword ? 'eye-off' : 'eye'} size={18} />
+            </span>
           </label>
           <div className="access-note">
             <p>Authorized access only for:</p>

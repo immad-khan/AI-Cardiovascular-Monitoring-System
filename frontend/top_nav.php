@@ -48,11 +48,13 @@ $alert_count = count($active_alerts);
         
             
         <li class="float-right">
-            <a href="logout.php" class="mega-menu" data-close="true"><i class="zmdi zmdi-power"></i></a>
             <a href="javascript:void(0);" class="js-right-sidebar" data-close="true"><i class="zmdi zmdi-settings zmdi-hc-spin"></i></a>
         </li>
         <li class="float-right">
 			<a href="#" class="mega-menu" data-close="true"> <?php echo strtoupper($_SESSION['username']) ." (".strtoupper($_SESSION['user_type']).")" ?></a>
+        </li>
+        <li class="float-right">
+            <a href="logout.php" class="btn btn-danger btn-round btn-sm" style="margin-top: 18px; margin-right: 15px; padding: 6px 16px; font-weight: 600; line-height: 1;"><i class="zmdi zmdi-power"></i> Logout</a>
         </li>
     </ul>
 

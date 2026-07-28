@@ -596,6 +596,10 @@ h1 em, h2 em {
   position: absolute; top: 50%; right: 16px; transform: translateY(-50%);
   color: #9eafad; pointer-events: none;
 }
+.signin-input .input-icon-toggle {
+  pointer-events: auto; cursor: pointer; user-select: none;
+}
+.signin-input .input-icon-toggle:hover { color: var(--teal, #1ecdaa); }
 
 /* Authorized access */
 .access-note { text-align: center; margin: 4px 0 2px; }
