@@ -32,29 +32,13 @@ try {
         $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, last_heartbeat, is_monitoring) VALUES (?, 'Online', NOW(), FALSE) RETURNING \"deviceID\", \"patientID\", \"is_monitoring\"");
         $stmt->execute([$mac]);
         $device = $stmt->fetch();
-    } else {
-        // Always mark device Online and update heartbeat whenever data arrives
-        $conn->prepare("UPDATE monitoring_devices SET status = 'Online', last_heartbeat = NOW() WHERE \"deviceID\" = ?")
-             ->execute([$device['deviceID']]);
     }
+    // Always update status to Online and refresh last_heartbeat
+    $conn->prepare("UPDATE monitoring_devices SET status = 'Online', last_heartbeat = NOW() WHERE \"deviceID\" = ?")
+         ->execute([$device['deviceID']]);
 
     $deviceID = $device["deviceID"];
-    $patientID = $device["patientID"]; // Pull patientID from DB (reflects latest admin assignment)
-    $is_monitoring = (bool)$device["is_monitoring"];
-
-    // Gate: skip idle readings ONLY when no patient is assigned AND session is off.
-    // If a patient IS assigned (admin linked device to patient), always record — 
-    // the patient may not have toggled the session but admin needs to see data.
-    if (!$is_monitoring && empty($patientID)) {
-        echo json_encode([
-            "status" => "ignored",
-            "message" => "No patient assigned and monitoring session is inactive. Assign device to a patient or turn on session from patient dashboard."
-        ]);
-        exit();
-    }
-
-    // If patient assigned but session is off, still record (admin-assigned mode)
-    // If session is explicitly ON by patient, record normally
+    $patientID = $device["patientID"]; // Pull patientID from DB
 
     // --- AI Inference Block ---
     $ai_prediction = null;
