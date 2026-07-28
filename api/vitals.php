@@ -29,22 +29,32 @@ try {
     $device = $stmt->fetch();
 
     if (!$device) {
-        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, is_monitoring) VALUES (?, 'Online', FALSE) RETURNING \"deviceID\", \"patientID\", \"is_monitoring\"");
+        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, last_heartbeat, is_monitoring) VALUES (?, 'Online', NOW(), FALSE) RETURNING \"deviceID\", \"patientID\", \"is_monitoring\"");
         $stmt->execute([$mac]);
         $device = $stmt->fetch();
+    } else {
+        // Always mark device Online and update heartbeat whenever data arrives
+        $conn->prepare("UPDATE monitoring_devices SET status = 'Online', last_heartbeat = NOW() WHERE \"deviceID\" = ?")
+             ->execute([$device['deviceID']]);
     }
+
     $deviceID = $device["deviceID"];
-    $patientID = $device["patientID"];
+    $patientID = $device["patientID"]; // Pull patientID from DB (reflects latest admin assignment)
     $is_monitoring = (bool)$device["is_monitoring"];
 
-    // If monitoring session is turned OFF by patient, skip saving junk idle readings
-    if (!$is_monitoring) {
+    // Gate: skip idle readings ONLY when no patient is assigned AND session is off.
+    // If a patient IS assigned (admin linked device to patient), always record — 
+    // the patient may not have toggled the session but admin needs to see data.
+    if (!$is_monitoring && empty($patientID)) {
         echo json_encode([
             "status" => "ignored",
-            "message" => "Monitoring session is inactive for this device. Turn on session from patient dashboard to record readings."
+            "message" => "No patient assigned and monitoring session is inactive. Assign device to a patient or turn on session from patient dashboard."
         ]);
         exit();
     }
+
+    // If patient assigned but session is off, still record (admin-assigned mode)
+    // If session is explicitly ON by patient, record normally
 
     // --- AI Inference Block ---
     $ai_prediction = null;

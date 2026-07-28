@@ -460,7 +460,7 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
   chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var text = chatInput.value.trim();
-    if (!text || busy || sending) return;
+    if (!text || sending) return;
     sending = true;
     sendBtn.disabled = true;
 
