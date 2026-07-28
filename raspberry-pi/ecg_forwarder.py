@@ -25,14 +25,44 @@ AZURE_API_URL = "https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewe
 SERIAL_BAUD   = 115200
 SERIAL_PORT   = None  # Set to None for auto-detection, or e.g. "/dev/ttyUSB0"
 
-# Get the MAC address of this Raspberry Pi to use as the device identifier
+# Get or persist the MAC address of this Raspberry Pi as the device identifier
 import subprocess
+import os
+
 def get_mac_address():
+    # 1. Check if saved in local file
+    mac_file = os.path.join(os.path.dirname(__file__), ".device_mac")
+    if os.path.exists(mac_file):
+        try:
+            with open(mac_file, "r") as f:
+                mac = f.read().strip()
+                if mac:
+                    return mac
+        except Exception:
+            pass
+
+    # 2. Try wlan0, eth0, or any physical network interface
+    for interface in ["wlan0", "eth0", "end0"]:
+        try:
+            path = f"/sys/class/net/{interface}/address"
+            if os.path.exists(path):
+                with open(path, "r") as f:
+                    mac = f.read().strip()
+                    if mac:
+                        with open(mac_file, "w") as f_out:
+                            f_out.write(mac)
+                        return mac
+        except Exception:
+            pass
+
+    # 3. Default static MAC assigned to patient p-10
+    default_mac = "e4:5f:01:8a:47:43"
     try:
-        result = subprocess.check_output(["cat", "/sys/class/net/eth0/address"]).decode().strip()
-        return result
-    except:
-        return str(uuid.uuid4())[:17]  # fallback unique ID
+        with open(mac_file, "w") as f_out:
+            f_out.write(default_mac)
+    except Exception:
+        pass
+    return default_mac
 
 DEVICE_MAC = get_mac_address()
 # ─────────────────────────────────────────────────────────────────────────────
