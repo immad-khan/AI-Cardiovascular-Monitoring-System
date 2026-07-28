@@ -45,10 +45,73 @@ try {
 
     // ── APPROVE ─────────────────────────────────────────────────────────────
     if ($status === 'approved') {
+        // 1. Generate unique Patient ID
+        $stmt_id = $conn->query("SELECT \"patientID\" FROM patients WHERE \"patientID\" LIKE 'DH-%' ORDER BY \"patientID\" DESC");
+        $existing = $stmt_id->fetchAll(PDO::FETCH_COLUMN);
+        $maxNum = 0;
+        foreach ($existing as $pid) {
+            if (preg_match('/^DH-(\d+)$/', $pid, $m)) {
+                $maxNum = max($maxNum, intval($m[1]));
+            }
+        }
+        $patient_id = '';
+        for ($i = 1; $i <= 1000; $i++) {
+            $candidate = 'DH-' . str_pad($maxNum + $i, 4, '0', STR_PAD_LEFT);
+            $check = $conn->prepare("SELECT 1 FROM patients WHERE \"patientID\" = ?");
+            $check->execute([$candidate]);
+            if (!$check->fetch()) {
+                $patient_id = $candidate;
+                break;
+            }
+        }
+        if (!$patient_id) {
+            echo json_encode(['success' => false, 'message' => 'Failed to generate unique Patient ID']);
+            exit();
+        }
+
+        // 2. Insert into patients table
+        $patientName = htmlspecialchars($sub['name']);
+        $patientEmail = $sub['email'];
+        $patientPhone = $sub['phone'];
+        $patientAge = $sub['age'];
+        $patientGender = $sub['gender'];
+        $date = date('Y-m-d H:i:s');
+        
+        $sql_patient = "INSERT INTO patients (\"patientID\", name, phone_no, email, age, gender, medical_history, date) VALUES (?, ?, ?, ?, ?, ?, '', ?)";
+        $stmt_pat = $conn->prepare($sql_patient);
+        $stmt_pat->execute([$patient_id, $patientName, $patientPhone, $patientEmail, $patientAge, $patientGender, $date]);
+
+        // 3. Create user account
+        $temp_password = "Patient@" . rand(1000, 9999);
+        $hashed_password = password_hash($temp_password, PASSWORD_DEFAULT);
+        
+        $user_check = $conn->prepare("SELECT \"userID\" FROM users WHERE email = ?");
+        $user_check->execute([$patientEmail]);
+        if (!$user_check->fetch()) {
+            $user_sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'patient')";
+            $user_stmt = $conn->prepare($user_sql);
+            $user_stmt->execute([$patient_id, $patientEmail, $hashed_password]);
+            
+            // Send welcome email
+            include_once(__DIR__ . '/../backend/notification_service.php');
+            $subject = "Welcome to DigiHealth - Your Account is Approved";
+            $htmlMessage = "<h3>Welcome to DigiHealth, {$patientName}!</h3>
+                            <p>Your subscription has been approved and your patient portal is ready.</p>
+                            <p><strong>Login URL:</strong> <a href='https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/frontend/index.php'>DigiHealth Portal</a></p>
+                            <p><strong>Username:</strong> {$patient_id}</p>
+                            <p><strong>Password:</strong> {$temp_password}</p>
+                            <p>Please login and change your password as soon as possible.</p>";
+            sendEmail($patientEmail, $subject, $htmlMessage);
+        }
+
+        // 4. Update subscription row with the created patient ID
+        $link_sub = $conn->prepare("UPDATE subscriptions SET created_patient_id = ? WHERE id = ?");
+        $link_sub->execute([$patient_id, $id]);
+
         echo json_encode([
             'success'  => true,
-            'message'  => 'Subscription approved.',
-            'redirect' => '../frontend/add-patient.php?from_sub=' . $id
+            'message'  => 'Subscription approved. Patient ' . $patient_id . ' created & email sent.',
+            'redirect' => '' // Tell frontend to just reload instead of redirect
         ]);
         exit();
     }

@@ -304,9 +304,9 @@ function showToast(msg, color) {
     setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 
-/* ── APPROVE → redirect to add-patient ──────── */
+/* ── APPROVE ────────────────────────────────── */
 function approveSubscription(id) {
-    showToast('⏳ Approving… redirecting to Add Patient form', '#1565c0');
+    showToast('⏳ Approving subscription & creating patient account...', '#1565c0');
     var fd = new FormData();
     fd.append('id', id);
     fd.append('status', 'approved');
@@ -314,8 +314,9 @@ function approveSubscription(id) {
     fetch('../api/update_subscription.php', { method:'POST', body:fd, credentials:'same-origin' })
     .then(function(r){ return r.json(); })
     .then(function(data){
-        if (data.success && data.redirect) {
-            window.location.href = data.redirect;
+        if (data.success) {
+            showToast('✅ ' + (data.message || 'Approved!'), '#4caf50');
+            setTimeout(function(){ location.reload(); }, 2000);
         } else {
             showToast('❌ ' + (data.message || 'Error'), '#f44336');
         }
