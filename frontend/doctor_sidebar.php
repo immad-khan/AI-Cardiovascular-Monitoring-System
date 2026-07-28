@@ -63,5 +63,8 @@ try {
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Doctor-MyProfile.php') ? 'active open' : ''; ?>">
             <a href="Doctor-MyProfile.php"><i class="zmdi zmdi-account-circle"></i><span>My Profile</span></a>
         </li>
+        <li>
+            <a href="logout.php" class="text-danger"><i class="zmdi zmdi-power text-danger"></i><span>Logout</span></a>
+        </li>
     </ul>
 </div>
