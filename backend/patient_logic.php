@@ -37,6 +37,7 @@ function handlePatientAction($conn, $postData) {
     $ward_no = htmlspecialchars(trim($postData['ward_no'] ?? ''));
     $date = htmlspecialchars(trim($postData['Date'] ?? date('Y-m-d H:i:s')));
     $mac_address = htmlspecialchars(trim($postData['mac_address'] ?? ''));
+    $from_sub_id = intval($postData['from_sub_id'] ?? 0);
 
     if (empty($patient_id) || empty($phone_no) || empty($email) || empty($age) || empty($gender)) {
         return ["status" => "All required fields must be filled", "type" => "error"];
@@ -97,6 +98,14 @@ function handlePatientAction($conn, $postData) {
                 $msg = "Patient created & email sent! Portal Login - Username: $patient_id, Password: $temp_password";
             } else {
                 $msg = "Patient record created successfully (User account already existed).";
+            }
+
+            // Link patient back to subscription for traceability
+            if ($from_sub_id > 0) {
+                try {
+                    $link_sub = $conn->prepare("UPDATE subscriptions SET created_patient_id = ? WHERE id = ?");
+                    $link_sub->execute([$patient_id, $from_sub_id]);
+                } catch (PDOException $ignored) {}
             }
         }
 

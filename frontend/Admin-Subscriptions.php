@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
 $subscriptions = [];
 $total = 0; $pending = 0; $approved = 0; $rejected = 0;
 
-// Filter
 $filter = $_GET['filter'] ?? 'all';
 $allowed = ['all', 'pending', 'approved', 'rejected'];
 if (!in_array($filter, $allowed)) $filter = 'all';
@@ -85,6 +84,22 @@ try {
         .img-modal img { max-width:90%; max-height:90vh; border-radius:10px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
         .toast-notif { position:fixed; bottom:24px; right:24px; background:#333; color:#fff; padding:12px 22px; border-radius:10px; font-size:14px; z-index:10000; opacity:0; transition:opacity 0.3s; pointer-events:none; }
         .toast-notif.show { opacity:1; }
+
+        /* ── Reject Reason Modal ─────────────────────────────── */
+        .reject-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10001; justify-content:center; align-items:center; }
+        .reject-overlay.active { display:flex; }
+        .reject-dialog { background:#fff; border-radius:16px; padding:32px; max-width:480px; width:92%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation: slideIn .25s ease; }
+        @keyframes slideIn { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .reject-dialog h3 { margin:0 0 8px; font-size:20px; color:#c62828; }
+        .reject-dialog p  { margin:0 0 18px; font-size:14px; color:#666; }
+        .reject-dialog textarea { width:100%; border:1px solid #ddd; border-radius:8px; padding:12px; font-size:14px; resize:vertical; min-height:110px; outline:none; transition:border-color .2s; }
+        .reject-dialog textarea:focus { border-color:#e52d27; }
+        .reject-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+        .reject-actions .btn-cancel-rej { background:#f1f3f4; color:#555; border:none; border-radius:20px; padding:8px 20px; font-weight:600; cursor:pointer; font-size:13px; }
+        .reject-actions .btn-submit-rej { background:linear-gradient(135deg,#e52d27,#b31217); color:#fff; border:none; border-radius:20px; padding:8px 24px; font-weight:700; cursor:pointer; font-size:13px; transition:opacity .2s; }
+        .reject-actions .btn-submit-rej:hover { opacity:.88; }
+        .reject-icon { width:56px; height:56px; background:#fff5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+        .reject-icon i { font-size:28px; color:#e52d27; }
     </style>
 </head>
 <body class="theme-cyan">
@@ -190,6 +205,20 @@ try {
                             <div class="sub-note"><strong>Note:</strong> <?= nl2br(htmlspecialchars($sub['note'])) ?></div>
                         <?php endif; ?>
 
+                        <?php if ($sub['status'] === 'rejected' && !empty($sub['rejection_reason'])): ?>
+                            <div class="sub-note" style="border-left-color:#f44336;background:#fff5f5;margin-top:8px;">
+                                <strong style="color:#c62828;"><i class="zmdi zmdi-close-circle m-r-4"></i>Rejection Reason:</strong>
+                                <?= nl2br(htmlspecialchars($sub['rejection_reason'])) ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($sub['status'] === 'approved' && !empty($sub['created_patient_id'])): ?>
+                            <div class="sub-note" style="border-left-color:#4caf50;background:#f1f8e9;margin-top:8px;">
+                                <strong style="color:#2e7d32;"><i class="zmdi zmdi-check-circle m-r-4"></i>Patient Account Created:</strong>
+                                Patient ID: <a href="patients.php" style="color:#1b5e20;font-weight:700;"><?= htmlspecialchars($sub['created_patient_id']) ?></a>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if (!empty($sub['payment_screenshot_url'])): ?>
                             <div class="sub-screenshot">
                                 <strong style="font-size:13px;color:#666;">Payment Screenshot:</strong><br>
@@ -201,13 +230,21 @@ try {
 
                         <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
                             <?php if ($sub['status'] !== 'approved'): ?>
-                                <button class="action-btn btn-approve" onclick="updateStatus(<?= $sub['id'] ?>, 'approved')"><i class="zmdi zmdi-check m-r-4"></i>Approve</button>
+                                <!-- APPROVE: redirects to add-patient, pre-filled -->
+                                <button class="action-btn btn-approve" onclick="approveSubscription(<?= $sub['id'] ?>)">
+                                    <i class="zmdi zmdi-check m-r-4"></i>Approve &amp; Create Patient
+                                </button>
                             <?php endif; ?>
                             <?php if ($sub['status'] !== 'rejected'): ?>
-                                <button class="action-btn btn-reject" onclick="updateStatus(<?= $sub['id'] ?>, 'rejected')"><i class="zmdi zmdi-close m-r-4"></i>Reject</button>
+                                <!-- REJECT: shows reason popup -->
+                                <button class="action-btn btn-reject" onclick="openRejectModal(<?= $sub['id'] ?>, '<?= addslashes(htmlspecialchars($sub['name'])) ?>')">
+                                    <i class="zmdi zmdi-close m-r-4"></i>Reject
+                                </button>
                             <?php endif; ?>
                             <?php if ($sub['status'] !== 'pending'): ?>
-                                <button class="action-btn btn-pending" onclick="updateStatus(<?= $sub['id'] ?>, 'pending')"><i class="zmdi zmdi-time m-r-4"></i>Reset to Pending</button>
+                                <button class="action-btn btn-pending" onclick="resetPending(<?= $sub['id'] ?>)">
+                                    <i class="zmdi zmdi-time m-r-4"></i>Reset to Pending
+                                </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -218,17 +255,37 @@ try {
     </div>
 </section>
 
-<!-- Image Modal -->
+<!-- Image Zoom Modal -->
 <div class="img-modal" id="imgModal" onclick="closeModal()">
     <img id="modalImg" src="" alt="Payment screenshot">
 </div>
 
-<!-- Toast Notification -->
+<!-- ── Rejection Reason Modal ──────────────────────────────────────── -->
+<div class="reject-overlay" id="rejectOverlay">
+    <div class="reject-dialog">
+        <div class="reject-icon"><i class="zmdi zmdi-close-circle-o"></i></div>
+        <h3>Reject Subscription</h3>
+        <p id="rejectSubName" style="font-weight:600;color:#333;margin-bottom:4px;"></p>
+        <p>Please provide a reason. This will be <strong>emailed to the applicant</strong> so they understand why their request was declined.</p>
+        <textarea id="rejectReason" placeholder="e.g. Payment proof is unclear. Please resubmit a valid screenshot..." maxlength="1000"></textarea>
+        <div class="reject-actions">
+            <button class="btn-cancel-rej" onclick="closeRejectModal()">Cancel</button>
+            <button class="btn-submit-rej" id="btnSubmitReject" onclick="submitReject()">
+                <i class="zmdi zmdi-send m-r-4"></i>Send &amp; Reject
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
 <div class="toast-notif" id="toast"></div>
 
 <script src="../assets/bundles/libscripts.bundle.js"></script>
 <script src="../assets/bundles/mainscripts.bundle.js"></script>
 <script>
+var _rejectId = null;
+
+/* ── Image Modal ────────────────────────────── */
 function openModal(src) {
     document.getElementById('modalImg').src = src;
     document.getElementById('imgModal').classList.add('active');
@@ -237,47 +294,105 @@ function closeModal() {
     document.getElementById('imgModal').classList.remove('active');
 }
 
+/* ── Toast ──────────────────────────────────── */
 function showToast(msg, color) {
     var t = document.getElementById('toast');
     t.textContent = msg;
     t.style.background = color || '#333';
     t.classList.add('show');
-    setTimeout(function() { t.classList.remove('show'); }, 3000);
+    setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 
-function updateStatus(id, status) {
+/* ── APPROVE → redirect to add-patient ──────── */
+function approveSubscription(id) {
+    showToast('⏳ Approving… redirecting to Add Patient form', '#1565c0');
     var fd = new FormData();
     fd.append('id', id);
-    fd.append('status', status);
+    fd.append('status', 'approved');
 
-    fetch('../api/update_subscription.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
+    fetch('../api/update_subscription.php', { method:'POST', body:fd, credentials:'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (data.success && data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            showToast('❌ ' + (data.message || 'Error'), '#f44336');
+        }
+    })
+    .catch(function(){ showToast('Network error', '#f44336'); });
+}
+
+/* ── REJECT MODAL ───────────────────────────── */
+function openRejectModal(id, name) {
+    _rejectId = id;
+    document.getElementById('rejectSubName').textContent = 'Applicant: ' + name;
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('rejectOverlay').classList.add('active');
+    setTimeout(function(){ document.getElementById('rejectReason').focus(); }, 200);
+}
+function closeRejectModal() {
+    document.getElementById('rejectOverlay').classList.remove('active');
+    _rejectId = null;
+}
+function submitReject() {
+    var reason = document.getElementById('rejectReason').value.trim();
+    if (!reason) {
+        document.getElementById('rejectReason').style.borderColor = '#e52d27';
+        document.getElementById('rejectReason').placeholder = '⚠ Please enter a reason before rejecting.';
+        return;
+    }
+
+    var btn = document.getElementById('btnSubmitReject');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    var fd = new FormData();
+    fd.append('id', _rejectId);
+    fd.append('status', 'rejected');
+    fd.append('reason', reason);
+
+    fetch('../api/update_subscription.php', { method:'POST', body:fd, credentials:'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        btn.disabled = false;
+        btn.innerHTML = '<i class="zmdi zmdi-send m-r-4"></i>Send &amp; Reject';
+        closeRejectModal();
         if (data.success) {
-            // Update badge
-            var badge = document.getElementById('badge-' + id);
-            if (badge) {
-                badge.className = 'badge-' + status;
-                badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-            }
-            // Update card border
-            var card = document.getElementById('sub-' + id);
-            if (card) {
-                card.className = 'sub-card status-' + status;
-            }
-            // Reload to refresh action buttons
-            setTimeout(function() { location.reload(); }, 800);
-            showToast('✅ ' + data.message, status === 'approved' ? '#4caf50' : (status === 'rejected' ? '#f44336' : '#ff9800'));
+            showToast('✅ ' + data.message, '#e52d27');
+            setTimeout(function(){ location.reload(); }, 1800);
         } else {
             showToast('❌ ' + data.message, '#f44336');
         }
     })
-    .catch(function() { showToast('Network error', '#f44336'); });
+    .catch(function(){
+        btn.disabled = false;
+        btn.innerHTML = '<i class="zmdi zmdi-send m-r-4"></i>Send &amp; Reject';
+        showToast('Network error', '#f44336');
+    });
 }
 
-// Keyboard: Escape to close modal
+/* ── RESET TO PENDING ───────────────────────── */
+function resetPending(id) {
+    var fd = new FormData();
+    fd.append('id', id);
+    fd.append('status', 'pending');
+
+    fetch('../api/update_subscription.php', { method:'POST', body:fd, credentials:'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (data.success) {
+            showToast('🔄 ' + data.message, '#ff9800');
+            setTimeout(function(){ location.reload(); }, 1000);
+        } else {
+            showToast('❌ ' + data.message, '#f44336');
+        }
+    })
+    .catch(function(){ showToast('Network error', '#f44336'); });
+}
+
+/* ── Keyboard shortcuts ─────────────────────── */
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') { closeModal(); closeRejectModal(); }
 });
 </script>
 </body>
