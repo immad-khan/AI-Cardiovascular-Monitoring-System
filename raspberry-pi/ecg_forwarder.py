@@ -21,6 +21,8 @@ import uuid
 import logging
 
 # ─── Configuration ───────────────────────────────────────────────────────────
+LOCAL_IP      = "10.127.129.89"
+LOCAL_API_URL = f"http://{LOCAL_IP}:8000/api/vitals.php"
 AZURE_API_URL = "https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/api/vitals.php"
 SERIAL_BAUD   = 115200
 SERIAL_PORT   = None  # Set to None for auto-detection, or e.g. "/dev/ttyUSB0"
@@ -90,40 +92,40 @@ def find_serial_port():
 
 
 def send_to_azure(ecg_raw_string):
-    """Send ECG data to the Azure API endpoint."""
+    """Send ECG data to API endpoint (tries local 10.127.129.89 first, falls back to Azure)."""
     payload = {
         "mac_address": DEVICE_MAC,
         "ECG_Raw":     ecg_raw_string,
-        # AD8232 only measures ECG. Heart rate is derived by the AI model.
-        # If you add other sensors, populate these fields:
-        # "heartRate":       72,
-        # "SpO2":            98.5,
-        # "Temperature":     36.6,
-        # "RespirationRate": 18,
     }
 
-    try:
-        log.info(f"Sending {len(ecg_raw_string.split(','))} ECG samples to Azure...")
-        response = requests.post(AZURE_API_URL, data=payload, timeout=30)
-        result = response.json()
+    # List of endpoints to try: Local server at 10.127.129.89 first, then Azure
+    endpoints = [
+        (LOCAL_API_URL, "Local Server (10.127.129.89)"),
+        (AZURE_API_URL, "Azure Cloud Server")
+    ]
 
-        if result.get("success"):
-            ai = result.get("ai", {})
-            log.info(
-                f"✅ Success! ReadingID={result.get('readingID')} | "
-                f"Prediction={ai.get('prediction')} | "
-                f"Confidence={ai.get('confidence'):.2%} | "
-                f"HeartRate={ai.get('hr')} BPM"
-            )
-        else:
-            log.error(f"❌ API Error: {result.get('message')}")
+    for url, label in endpoints:
+        try:
+            log.info(f"Sending {len(ecg_raw_string.split(','))} ECG samples to {label}...")
+            response = requests.post(url, data=payload, timeout=5)
+            result = response.json()
 
-    except requests.exceptions.Timeout:
-        log.error("Request timed out. Azure may be slow or unreachable.")
-    except requests.exceptions.ConnectionError:
-        log.error("Could not connect to Azure. Check your internet connection.")
-    except Exception as e:
-        log.error(f"Unexpected error: {e}")
+            if result.get("success"):
+                ai = result.get("ai", {})
+                log.info(
+                    f"✅ [{label}] Success! ReadingID={result.get('readingID')} | "
+                    f"Prediction={ai.get('prediction')} | "
+                    f"Confidence={ai.get('confidence'):.2%} | "
+                    f"HeartRate={ai.get('hr')} BPM"
+                )
+                return  # Sent successfully
+            else:
+                log.warning(f"⚠️ [{label}] API Error: {result.get('message')}")
+
+        except requests.exceptions.RequestException as err:
+            log.warning(f"Could not reach {label} ({url}): {err}. Trying next endpoint...")
+
+    log.error("❌ Failed to reach both local server and Azure cloud server.")
 
 
 def main():
