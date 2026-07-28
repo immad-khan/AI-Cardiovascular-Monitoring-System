@@ -65,6 +65,7 @@ if (!isset($_SESSION['user_type']) || !in_array($_SESSION['user_type'], ['admin'
     .data-flow-log .log-warn { color: #FF9800; }
     .data-flow-log .log-ok   { color: #4CAF50; }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <div class="page-loader-wrapper">

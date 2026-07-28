@@ -42,6 +42,7 @@ $doctorId = $_SESSION['user_id'];
         font-size: 11px; font-weight: 700; margin-top: 5px; padding: 0 6px;
     }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5">

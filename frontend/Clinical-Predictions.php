@@ -51,6 +51,7 @@ try {
 <link rel="stylesheet" href="../assets/plugins/jquery-datatable/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 

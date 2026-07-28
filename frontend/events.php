@@ -41,6 +41,7 @@ $doctors = $conn->query("SELECT u.\"userID\", COALESCE(p.full_name, u.username) 
 <link rel="stylesheet" href="../assets/plugins/fullcalendar/fullcalendar.min.css">
 <link rel="stylesheet" href="../assets/css/main.css">
 <link rel="stylesheet" href="../assets/css/color_skins.css">
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <div class="page-loader-wrapper">

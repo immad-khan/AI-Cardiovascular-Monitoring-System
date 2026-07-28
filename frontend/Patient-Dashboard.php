@@ -107,6 +107,7 @@ $latest = $readings[0] ?? null;
             top: 0 !important;
         }
     </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 
 <body class="theme-cyan">

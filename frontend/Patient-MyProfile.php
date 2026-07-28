@@ -343,6 +343,7 @@ try {
     }
     .summary-btn:hover { background: #0b9d9a; color: #fff; }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <aside id="leftsidebar" class="sidebar">

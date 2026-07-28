@@ -84,6 +84,7 @@ try {
     .chat-input-area button:hover { background: #0d47a1; }
     .chat-input-area button:disabled { background: #ccc; cursor: not-allowed; }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5">

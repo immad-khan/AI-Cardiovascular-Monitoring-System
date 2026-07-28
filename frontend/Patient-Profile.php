@@ -78,6 +78,7 @@ try {
 <link rel="stylesheet" href="../assets/css/color_skins.css">
 <script src="../assets/js/canvasjs.min.js"></script>
 <style>body.theme-cyan .content { margin-top: 0 !important; } body.theme-cyan .sidebar { top: 0 !important; }</style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <aside id="leftsidebar" class="sidebar">

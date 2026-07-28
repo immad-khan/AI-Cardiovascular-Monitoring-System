@@ -131,6 +131,7 @@ $isEdit       = ($patientId && !$from_sub_id);
     .btn-primary { background:linear-gradient(135deg,#1565c0,#1e88e5); border:none; }
     .btn-primary:hover { opacity:.9; }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5">

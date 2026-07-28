@@ -51,6 +51,7 @@ try {
     .stat-card { text-align: center; padding: 20px; }
     .stat-card h3 { font-size: 2rem; margin: 10px 0 5px; }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>

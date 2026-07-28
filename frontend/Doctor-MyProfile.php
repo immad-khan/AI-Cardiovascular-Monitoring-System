@@ -74,6 +74,7 @@ try {
     .patient-chip { display: inline-flex; align-items: center; gap: 6px; background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 20px; padding: 5px 12px 5px 8px; font-size: 12px; color: #1565c0; margin: 3px; }
     .patient-chip .chip-dot { width: 8px; height: 8px; border-radius: 50%; background: #1565c0; }
 </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <nav class="navbar p-l-5 p-r-5">

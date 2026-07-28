@@ -101,6 +101,7 @@ try {
         .reject-icon { width:56px; height:56px; background:#fff5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
         .reject-icon i { font-size:28px; color:#e52d27; }
     </style>
+<!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
 <div class="overlay"></div>
