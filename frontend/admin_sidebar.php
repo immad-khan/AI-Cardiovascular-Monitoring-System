@@ -63,5 +63,8 @@
         <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'Admin-Subscriptions.php') ? 'active' : ''; ?>">
             <a href="Admin-Subscriptions.php"><i class="zmdi zmdi-email"></i><span>Subscriptions</span></a>
         </li>
+        <li>
+            <a href="logout.php" class="text-danger"><i class="zmdi zmdi-power text-danger"></i><span>Logout</span></a>
+        </li>
     </ul>
 </div>
