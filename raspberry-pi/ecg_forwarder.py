@@ -107,7 +107,8 @@ def send_to_azure(ecg_raw_string):
     for url, label in endpoints:
         try:
             log.info(f"Sending {len(ecg_raw_string.split(','))} ECG samples to {label}...")
-            response = requests.post(url, data=payload, timeout=5)
+            # timeout=(connect_timeout, read_timeout) -> 3s to connect, 30s to process AI model & save DB
+            response = requests.post(url, data=payload, timeout=(3, 30))
             result = response.json()
 
             if result.get("success"):
