@@ -3,14 +3,15 @@ include_once(__DIR__ . "/../backend/alert_logic.php");
 $active_alerts = getActiveAlerts($conn);
 $alert_count = count($active_alerts);
 ?>
-<!-- ── Mobile: Hamburger button (shown only on mobile via CSS) ── -->
-<button id="mobile-menu-toggle" aria-label="Toggle navigation">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
-
 <ul class="nav navbar-nav navbar-left">
+        <!-- ── Mobile: Hamburger button (shown only on mobile via CSS) ── -->
+        <li id="mobile-toggle-wrapper">
+            <button id="mobile-menu-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </li>
         
         <li><a href="javascript:void(0);" class="ls-toggle-btn toggle-sidebar" data-close="true"><i class="zmdi zmdi-swap"></i></a></li>
         

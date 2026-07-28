@@ -9,13 +9,17 @@
 /* ═══════════════════════════════════════════════
    HAMBURGER TOGGLE BUTTON (mobile only)
 ═══════════════════════════════════════════════ */
-#mobile-menu-toggle {
+#mobile-toggle-wrapper {
     display: none;
-    background: none;
+    align-items: center;
+    margin-right: 15px;
+}
+#mobile-menu-toggle {
+    background: transparent;
     border: none;
     cursor: pointer;
     padding: 8px 10px;
-    margin-right: 6px;
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -25,7 +29,7 @@
 #mobile-menu-toggle span {
     display: block;
     width: 24px;
-    height: 2px;
+    height: 3px;
     background: #fff;
     border-radius: 2px;
     transition: all 0.3s ease;
@@ -52,8 +56,8 @@
 ═══════════════════════════════════════════════ */
 @media screen and (max-width: 991px) {
 
-    /* Show hamburger */
-    #mobile-menu-toggle { display: flex !important; }
+    /* Show hamburger wrapper */
+    #mobile-toggle-wrapper { display: flex !important; }
 
     /* ── Sidebar: hidden off-screen by default ── */
     #leftsidebar.sidebar {
