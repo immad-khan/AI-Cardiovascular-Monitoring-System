@@ -14,8 +14,6 @@ try {
     
     // New Statistics from Use Case Diagrams
     $nurse_count = $conn->query("SELECT COUNT(*) FROM users WHERE role = 'nurse'")->fetchColumn();
-    $dept_count = 0; // Fallback until departments table is migrated
-    try { $dept_count = $conn->query("SELECT COUNT(*) FROM departments")->fetchColumn(); } catch(Exception $e) {}
     
     $new_patients = $conn->query("SELECT * FROM patients ORDER BY date DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
     $alerts = $conn->query("SELECT a.*, md.model FROM \"CRITICAL_ALERT\" a JOIN monitoring_devices md ON a.\"deviceID\" = md.\"deviceID\" ORDER BY a.timestamp DESC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
@@ -56,7 +54,6 @@ try {
             <div class="col-lg-2 col-md-4 col-sm-6"><div class="card body"><h5 class="m-b-0"><?php echo $patient_count ?></h5><p>Patients</p></div></div>
             <div class="col-lg-2 col-md-4 col-sm-6"><div class="card body"><h5 class="m-b-0"><?php echo $device_count ?></h5><p>IoT Hubs</p></div></div>
             <div class="col-lg-2 col-md-4 col-sm-6"><div class="card body"><h5 class="m-b-0"><?php echo $nurse_count ?></h5><p>Nursing Staff</p></div></div>
-            <div class="col-lg-2 col-md-4 col-sm-6"><div class="card body"><h5 class="m-b-0"><?php echo $dept_count ?></h5><p>Departments</p></div></div>
         </div>
         <div class="row clearfix">
             <div class="col-lg-4 col-md-12">

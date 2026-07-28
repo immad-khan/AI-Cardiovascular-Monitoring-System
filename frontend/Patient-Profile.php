@@ -81,6 +81,15 @@ try {
 <!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
+<div class="page-loader-wrapper">
+    <div class="loader">
+        <div class="m-t-30"><img class="zmdi-hc-spin" src="../assets/images/logo.svg" width="48" height="48" alt="DigiHealth"></div>
+        <p>Analyzing ECG Signals...</p>
+    </div>
+</div>
+<div class="overlay"></div>
+<nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>
+
 <aside id="leftsidebar" class="sidebar">
     <?php
     if ($_SESSION['user_type'] === 'admin') include("admin_sidebar.php");

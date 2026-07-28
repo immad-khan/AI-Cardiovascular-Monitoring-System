@@ -35,9 +35,6 @@
                 <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'add-device.php') ? 'active' : ''; ?>"><a href="add-device.php">Add Device</a></li>         
             </ul>
         </li>
-        <li class="<?php echo (basename($_SERVER['PHP_SELF']) == 'all-Departments.php') ? 'active' : ''; ?>">
-            <a href="all-Departments.php"><i class="zmdi zmdi-city"></i><span>Manage Departments</span></a>
-        </li>
         <li>
             <a href="Clinical-Predictions.php"><i class="zmdi zmdi-chart"></i><span>AI Predictions</span></a>
         </li>

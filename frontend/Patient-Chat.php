@@ -240,7 +240,8 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
 <!-- Mobile CSS Fix --><link rel="stylesheet" href="../assets/css/mobile.css">
 </head>
 <body class="theme-cyan">
-
+<div class="overlay"></div>
+<nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>
