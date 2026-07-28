@@ -14,7 +14,7 @@ $username = $_SESSION['username'] ?? '';
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
 
 try {
-    // 1. Resolve Patient ID
+    // 1. Resolve Patient ID (case-insensitive)
     $patientID = null;
     if ($patientEmail) {
         $stmt = $conn->prepare('SELECT "patientID" FROM patients WHERE LOWER(email) = LOWER(?)');
@@ -22,7 +22,7 @@ try {
         $patientID = $stmt->fetchColumn();
     }
     if (!$patientID && $username) {
-        $stmt = $conn->prepare('SELECT "patientID" FROM patients WHERE "patientID" = ? OR LOWER(email) = LOWER(?)');
+        $stmt = $conn->prepare('SELECT "patientID" FROM patients WHERE LOWER("patientID") = LOWER(?) OR LOWER(email) = LOWER(?)');
         $stmt->execute([$username, $username]);
         $patientID = $stmt->fetchColumn();
     }
@@ -30,14 +30,14 @@ try {
         $patientID = $username;
     }
 
-    // 2. Find or link monitoring device for this patient
-    $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ? LIMIT 1');
+    // 2. Find or link monitoring device for this patient (case-insensitive)
+    $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE LOWER("patientID") = LOWER(?) LIMIT 1');
     $stmt->execute([$patientID]);
     $device = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Fallback A: Check latest vitals reading for device
     if (!$device && $patientID) {
-        $stmt = $conn->prepare('SELECT "deviceID" FROM vital_sign_readings WHERE "patientID" = ? ORDER BY timestamp DESC LIMIT 1');
+        $stmt = $conn->prepare('SELECT "deviceID" FROM vital_sign_readings WHERE LOWER("patientID") = LOWER(?) ORDER BY timestamp DESC LIMIT 1');
         $stmt->execute([$patientID]);
         $devId = $stmt->fetchColumn();
         if ($devId) {
@@ -81,11 +81,14 @@ try {
         $update = $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ?::boolean WHERE "deviceID" = ?');
         $update->execute([$boolVal, $device['deviceID']]);
 
-        // Also update any devices linked to this patientID
+        // Also update ALL devices linked to this patientID (case-insensitive) or ALL devices in system as fallback
         if ($patientID) {
-            $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ?::boolean WHERE "patientID" = ?')
+            $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ?::boolean WHERE LOWER("patientID") = LOWER(?)')
                  ->execute([$boolVal, $patientID]);
         }
+        // Also update all unassigned devices or primary devices
+        $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ?::boolean WHERE "patientID" IS NULL')
+             ->execute([$boolVal]);
 
         echo json_encode([
             'success' => true,

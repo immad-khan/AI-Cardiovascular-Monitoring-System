@@ -303,27 +303,40 @@ $latest = $readings[0] ?? null;
             fetch('../api/toggle_session.php?action=status')
                 .then(r => r.json())
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         updateSessionUI(data.is_monitoring);
                     }
-                });
+                })
+                .catch(err => console.error('Status check error:', err));
         }
 
         function toggleSession() {
             var btn = document.getElementById('toggle-session-btn');
-            btn.disabled = true;
+            if (btn) btn.disabled = true;
+
+            // Immediately toggle UI state locally for instant visual response
+            var text = document.getElementById('session-status-text');
+            var isCurrentlyActive = text && text.innerText.includes('Active');
+            var nextState = !isCurrentlyActive;
+            updateSessionUI(nextState);
+
             fetch('../api/toggle_session.php?action=toggle')
                 .then(r => r.json())
                 .then(data => {
-                    btn.disabled = false;
-                    if (data.success) {
+                    if (btn) btn.disabled = false;
+                    if (data && data.success) {
                         updateSessionUI(data.is_monitoring);
-                        alert(data.message);
                     } else {
-                        alert(data.message);
+                        updateSessionUI(isCurrentlyActive); // revert if failed
+                        alert((data && data.message) ? data.message : 'Toggle failed');
                     }
                 })
-                .catch(() => { btn.disabled = false; });
+                .catch(err => {
+                    if (btn) btn.disabled = false;
+                    updateSessionUI(isCurrentlyActive); // revert if network error
+                    console.error('Toggle error:', err);
+                    alert('Network error while toggling session.');
+                });
         }
 
         function updateSessionUI(isMonitoring) {
@@ -334,23 +347,32 @@ $latest = $readings[0] ?? null;
 
             if (isMonitoring) {
                 if (card) card.style.borderLeftColor = '#28a745';
-                indicator.style.backgroundColor = '#28a745';
-                indicator.style.boxShadow = '0 0 8px #28a745';
-                text.innerText = 'ECG Monitoring Session Active';
-                btn.className = 'btn btn-danger btn-round waves-effect px-4';
-                btn.style.padding = '10px 24px';
-                btn.innerHTML = '<i class="zmdi zmdi-power m-r-5"></i> Stop Monitoring Session';
+                if (indicator) {
+                    indicator.style.backgroundColor = '#28a745';
+                    indicator.style.boxShadow = '0 0 8px #28a745';
+                }
+                if (text) text.innerText = 'ECG Monitoring Session Active';
+                if (btn) {
+                    btn.className = 'btn btn-danger btn-round waves-effect px-4';
+                    btn.style.padding = '10px 24px';
+                    btn.innerHTML = '<i class="zmdi zmdi-power m-r-5"></i> Stop Monitoring Session';
+                }
             } else {
                 if (card) card.style.borderLeftColor = '#dc3545';
-                indicator.style.backgroundColor = '#dc3545';
-                indicator.style.boxShadow = '0 0 8px #dc3545';
-                text.innerText = 'ECG Monitoring Session Stopped (Idle)';
-                btn.className = 'btn btn-success btn-round waves-effect px-4';
-                btn.style.padding = '10px 24px';
-                btn.innerHTML = '<i class="zmdi zmdi-play m-r-5"></i> Start Monitoring Session';
+                if (indicator) {
+                    indicator.style.backgroundColor = '#dc3545';
+                    indicator.style.boxShadow = '0 0 8px #dc3545';
+                }
+                if (text) text.innerText = 'ECG Monitoring Session Stopped (Idle)';
+                if (btn) {
+                    btn.className = 'btn btn-success btn-round waves-effect px-4';
+                    btn.style.padding = '10px 24px';
+                    btn.innerHTML = '<i class="zmdi zmdi-play m-r-5"></i> Start Monitoring Session';
+                }
             }
         }
 
+        document.addEventListener('DOMContentLoaded', checkSessionStatus);
         checkSessionStatus();
     </script>
 </body>
