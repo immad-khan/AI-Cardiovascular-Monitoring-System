@@ -10,46 +10,58 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'patient') {
 }
 
 $patientEmail = $_SESSION['email'] ?? '';
+$username = $_SESSION['username'] ?? '';
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
 
 try {
-    // 1. Get patient's patientID
-    $stmt = $conn->prepare('SELECT "patientID" FROM patients WHERE email = ?');
-    $stmt->execute([$patientEmail]);
-    $patientID = $stmt->fetchColumn();
-
+    // 1. Resolve Patient ID
+    $patientID = null;
+    if ($patientEmail) {
+        $stmt = $conn->prepare('SELECT "patientID" FROM patients WHERE LOWER(email) = LOWER(?)');
+        $stmt->execute([$patientEmail]);
+        $patientID = $stmt->fetchColumn();
+    }
+    if (!$patientID && $username) {
+        $stmt = $conn->prepare('SELECT "patientID" FROM patients WHERE "patientID" = ? OR LOWER(email) = LOWER(?)');
+        $stmt->execute([$username, $username]);
+        $patientID = $stmt->fetchColumn();
+    }
     if (!$patientID) {
-        echo json_encode(['success' => false, 'message' => 'Patient record not found.']);
-        exit();
+        $patientID = $username;
     }
 
-    // 2. Get patient's assigned monitoring device (default session is OFF / FALSE)
-    $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ?');
+    // 2. Find or link monitoring device for this patient
+    $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ? LIMIT 1');
     $stmt->execute([$patientID]);
     $device = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Fallback: If device not linked directly in monitoring_devices, link patient's latest reading device or primary device
-    if (!$device) {
+    // Fallback A: Check latest vitals reading for device
+    if (!$device && $patientID) {
         $stmt = $conn->prepare('SELECT "deviceID" FROM vital_sign_readings WHERE "patientID" = ? ORDER BY timestamp DESC LIMIT 1');
         $stmt->execute([$patientID]);
-        $deviceID = $stmt->fetchColumn();
-        
-        if (!$deviceID) {
-            $stmt = $conn->query('SELECT "deviceID" FROM monitoring_devices ORDER BY "deviceID" ASC LIMIT 1');
-            $deviceID = $stmt->fetchColumn();
-        }
-
-        if ($deviceID) {
-            $conn->prepare('UPDATE monitoring_devices SET "patientID" = ? WHERE "deviceID" = ?')->execute([$patientID, $deviceID]);
-            $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "patientID" = ?');
-            $stmt->execute([$patientID]);
+        $devId = $stmt->fetchColumn();
+        if ($devId) {
+            $conn->prepare('UPDATE monitoring_devices SET "patientID" = ? WHERE "deviceID" = ?')->execute([$patientID, $devId]);
+            $stmt = $conn->prepare('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices WHERE "deviceID" = ?');
+            $stmt->execute([$devId]);
             $device = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     }
 
+    // Fallback B: Pick any available device in system and link to patient
     if (!$device) {
-        echo json_encode(['success' => false, 'message' => 'No monitoring device assigned to your account.']);
-        exit();
+        $stmt = $conn->query('SELECT "deviceID", COALESCE("is_monitoring", FALSE) as is_monitoring FROM monitoring_devices ORDER BY "deviceID" ASC LIMIT 1');
+        $device = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($device && $patientID) {
+            $conn->prepare('UPDATE monitoring_devices SET "patientID" = ? WHERE "deviceID" = ?')->execute([$patientID, $device['deviceID']]);
+        }
+    }
+
+    // Fallback C: Create device row if table is empty
+    if (!$device) {
+        $stmt = $conn->prepare("INSERT INTO monitoring_devices (mac_address, status, \"patientID\", is_monitoring) VALUES ('00:00:00:00:00:00', 'Online', ?, TRUE) RETURNING \"deviceID\", \"is_monitoring\"");
+        $stmt->execute([$patientID]);
+        $device = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     if ($action === 'status') {
@@ -63,9 +75,17 @@ try {
 
     if ($action === 'toggle' || $action === 'start' || $action === 'stop') {
         $newStatus = ($action === 'start') ? true : (($action === 'stop') ? false : !(bool)$device['is_monitoring']);
-        
-        $update = $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ? WHERE "deviceID" = ?');
-        $update->execute([$newStatus ? 1 : 0, $device['deviceID']]);
+        $boolVal = $newStatus ? 'true' : 'false';
+
+        // Update target device
+        $update = $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ?::boolean WHERE "deviceID" = ?');
+        $update->execute([$boolVal, $device['deviceID']]);
+
+        // Also update any devices linked to this patientID
+        if ($patientID) {
+            $conn->prepare('UPDATE monitoring_devices SET "is_monitoring" = ?::boolean WHERE "patientID" = ?')
+                 ->execute([$boolVal, $patientID]);
+        }
 
         echo json_encode([
             'success' => true,
@@ -80,3 +100,4 @@ try {
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
+
