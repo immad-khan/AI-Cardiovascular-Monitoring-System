@@ -64,6 +64,8 @@
         position: fixed !important;
         top: 0 !important;
         left: -270px !important;
+        margin-left: 0 !important;
+        transform: none !important;
         width: 260px !important;
         height: 100vh !important;
         z-index: 9999 !important;
@@ -75,6 +77,8 @@
     /* Sidebar open state */
     #leftsidebar.sidebar.mobile-open {
         left: 0 !important;
+        margin-left: 0 !important;
+        transform: translateX(0) !important;
         box-shadow: 6px 0 20px rgba(0,0,0,0.3) !important;
     }
 
@@ -102,8 +106,18 @@
     /* Shift right-side nav items */
     .navbar .nav.navbar-nav.navbar-left {
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
+        justify-content: flex-start !important;
         flex-wrap: nowrap !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .navbar .nav.navbar-nav.navbar-left > li {
+        display: flex !important;
+        align-items: center !important;
+        margin: 0 5px !important;
     }
     .navbar-nav .float-right,
     .navbar-nav li.float-right {
