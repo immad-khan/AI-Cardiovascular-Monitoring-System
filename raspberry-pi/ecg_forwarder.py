@@ -21,7 +21,7 @@ import uuid
 import logging
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-API_URL     = "https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/api/vitals.php"
+API_URL="https://digihealth-api-123-anhvh5hbafd9f6f7.uaenorth-01.azurewebsites.net/api/vitals.php"
 SERIAL_BAUD = 115200
 SERIAL_PORT = None  # Set to None for auto-detection, or e.g. "/dev/ttyUSB0"
 
@@ -121,7 +121,7 @@ def main():
     port = SERIAL_PORT or find_serial_port()
     log.info(f"Connecting to ESP32 on {port} at {SERIAL_BAUD} baud...")
     log.info(f"Device MAC: {DEVICE_MAC}")
-    log.info(f"Azure endpoint: {AZURE_API_URL}")
+    log.info(f"Azure endpoint: {API_URL}")
 
     with serial.Serial(port, SERIAL_BAUD, timeout=30) as ser:
         log.info("✅ Serial connection established. Waiting for ECG data...")
