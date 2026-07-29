@@ -197,7 +197,7 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
       text-align: center; padding: 10px 16px; margin-bottom: 14px;
       border-top: 1px solid var(--line); color: #9aafab; font-size: 11px; line-height: 1.5;
     }
-    .input-row { display: flex; align-items: center; gap: 12px; max-width: 720px; }
+    .input-row { display: flex; align-items: center; gap: 12px; width: 100%; }
     .input-wrap {
       flex: 1; display: flex; align-items: center;
       background: #fff; border: 1.5px solid var(--line); border-radius: 999px;
@@ -241,7 +241,6 @@ function e($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
 </head>
 <body class="theme-cyan">
 <div class="overlay"></div>
-<nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>

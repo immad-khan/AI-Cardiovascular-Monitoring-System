@@ -205,7 +205,6 @@ body.theme-cyan .sidebar { top: 0 !important; }
 </head>
 <body class="theme-cyan">
 <div class="overlay"></div>
-<nav class="navbar p-l-5 p-r-5"><?php include("top_nav.php") ?></nav>
 <aside id="leftsidebar" class="sidebar">
     <?php include("patient_sidebar.php") ?>
 </aside>
