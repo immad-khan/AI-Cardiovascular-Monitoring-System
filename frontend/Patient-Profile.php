@@ -353,6 +353,7 @@ $(function(){
     if ($("#ecgPlots").is(':empty')) {
         $("#ecgPlots").html("<div class='text-center p-30 text-muted'><i class='zmdi zmdi-chart-donut' style='font-size:2rem;'></i><p>No ECG waveform data available.</p></div>");
     }
+    $('.page-loader-wrapper').fadeOut();
 });
 
 function generateAISummary() {
