@@ -278,6 +278,9 @@ $latest = $readings[0] ?? null;
     <script src="../assets/bundles/libscripts.bundle.js"></script>
     <script>
         window.onload = function () {
+            <?php
+            $revReadings = array_reverse($readings);
+            if (!empty($revReadings)): ?>
             var chart = new CanvasJS.Chart("hrTrendChart", {
                 animationEnabled: true,
                 theme: "light2",
@@ -288,15 +291,18 @@ $latest = $readings[0] ?? null;
                     markerColor: "#e53935",
                     dataPoints: [
                         <?php
-                        $revReadings = array_reverse($readings);
                         foreach ($revReadings as $r) {
-                            echo "{ x: new Date('" . $r['timestamp'] . "'), y: " . $r['heartRate'] . " },";
+                            $hr = isset($r['heartRate']) ? intval($r['heartRate']) : 0;
+                            echo "{ x: new Date('" . $r['timestamp'] . "'), y: " . $hr . " },";
                         }
                         ?>
                     ]
                 }]
             });
             chart.render();
+            <?php else: ?>
+            document.getElementById('hrTrendChart').innerHTML = '<div class="text-center p-t-30 p-b-30 text-muted"><i class="zmdi zmdi-chart-line" style="font-size:2.5rem;color:#ccc;"></i><p class="m-t-10">No heart rate data yet. Start monitoring to see your trends.</p></div>';
+            <?php endif; ?>
         };
 
         function checkSessionStatus() {
